@@ -86,7 +86,17 @@ https://github.com/kubeflow/pipelines/wiki/Deploy-the-Kubeflow-Pipelines-Service
   - Cloud ML Engine
   - Kubefnetes Engine
   
-  ## Set up a Kubernetes Engine (GKE) cluster
-  - 
+ ## Set up a Kubernetes Engine (GKE) cluster
+ - GKEクラスタを立ち上げる
+  - Machine type 8 vCPUs、Allow full accessto all cloud APIs
+  - 詳細はスクショ
+ - 'kubectl' コンテクストをセットします。
+ 
+ cloud shellの中で
+ '''
+ gcloud container clusters get-credentials kubeflow-pipelines --zone us-central1-a --project mlops-215604
+ '''
+ 
+  
 
 
