@@ -92,10 +92,21 @@ https://github.com/kubeflow/pipelines/wiki/Deploy-the-Kubeflow-Pipelines-Service
   - 詳細はスクショ
  - 'kubectl' コンテクストをセットします。
  
- cloud shellの中で
  
- 'gcloud container clusters get-credentials kubeflow-pipelines --zone us-central1-a --project mlops-215604'
+ ###  cloud shellの中で
+```
+gcloud container clusters get-credentials kubeflow-pipelines --zone us-central1-a --project mlops-215604
  
+kubectl create clusterrolebinding default-admin --clusterrole=cluster-admin --user=taketoshi.kazusa@brainpad.cp.jp
+kubectl create clusterrolebinding sa-admin --clusterrole=cluster-admin --serviceaccount=kubeflow:pipeline-runner
+```
+
+```
+PIPELINE_VERSION=0.1.2
+kubectl create -f https://storage.googleapis.com/ml-pipeline/release/$PIPELINE_VERSION/bootstrapper.yaml
+```
+
+
   
 
 
