@@ -93,9 +93,8 @@ https://github.com/kubeflow/pipelines/wiki/Deploy-the-Kubeflow-Pipelines-Service
  - 'kubectl' コンテクストをセットします。
  
  cloud shellの中で
- '''
- gcloud container clusters get-credentials kubeflow-pipelines --zone us-central1-a --project mlops-215604
- '''
+ 
+ 'gcloud container clusters get-credentials kubeflow-pipelines --zone us-central1-a --project mlops-215604'
  
   
 
