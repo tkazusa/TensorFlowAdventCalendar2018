@@ -106,7 +106,23 @@ PIPELINE_VERSION=0.1.2
 kubectl create -f https://storage.googleapis.com/ml-pipeline/release/$PIPELINE_VERSION/bootstrapper.yaml
 ```
 
+```
+kubectl get job
+NAME                       DESIRED   SUCCESSFUL   AGE
+deploy-ml-pipeline-rt8zf   1         1            14h
 
-  
+kubectl get svc
+NAME         TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+kubernetes   ClusterIP   10.7.240.1   <none>        443/TCP   14h
+```
+あれ？kubernetes本体以外のサービスたってなくね？ポートフォワード意味ある？
+
+
+
+Kubeflow pipelines UIにローカルのブラウザからGKE上のpod内のコンテナにアクセスできるようにポートフォワードの設定をしておく。
+```
+export NAMESPACE=kubeflow
+kubectl port-forward -n ${NAMESPACE} $(kubectl get pods -n ${NAMESPACE} --selector=service=ambassador -o jsonpath='{.items[0].metadata.name}') 8080:80
+```
 
 
