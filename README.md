@@ -117,13 +117,6 @@ PIPELINE_VERSION=0.1.2
 kubectl create -f https://storage.googleapis.com/ml-pipeline/release/$PIPELINE_VERSION/bootstrapper.yaml
 ```
 
-Error from server (Forbidden): error when creating "https://storage.googleapis.com/ml-pipeline/release/0.1.2/bootstrapper.yaml": clusterroles.rbac.authorization.k8s.io "mlpipeline-deploy-admin" is forbidden: attempt to grant extra privileges: [
-PolicyRule{Resources:["*"], APIGroups:["*"], Verbs:["*"]} PolicyRule{NonResourceURLs:["*"], Verbs:["*"]}] user=&{taketoshi.kazusa@brainpad.co.jp  [system:authenticated] map[user-assertion.cloud.google.com:[AK5xou8sPIQHUd9mRqB2uoNQ8lU/oJazV8n9Zw
-3VBvnkPESAvreCnsGb7Ul2fc3OV51eZNAcpmSR6qdqrajJ9/JpW2okNHwwDovoIrnwWzARJliwi64q//mClGZTocBREpp/XmY+hNdmP7mgb0fDmy6CbkZHlnpMJLH1RiIYfxX/t8/lGYPYMuqCWGlcMXYyFXdyQ7jHoxVa9SwmxdyaGikq180wk6+4bhIdfVDdDSG/xzvYxMeMH6U=]]} ownerrules=[PolicyRule{Resourc
-es:["selfsubjectaccessreviews" "selfsubjectrulesreviews"], APIGroups:["authorization.k8s.io"], Verbs:["create"]} PolicyRule{NonResourceURLs:["/api" "/api/*" "/apis" "/apis/*" "/healthz" "/swagger-2.0.0.pb-v1" "/swagger.json" "/swaggerapi" "/swa
-ggerapi/*" "/version"], Verbs:["get"]}] ruleResolutionErrors=[]
-
-
 ```
 kubectl get job
 NAME                       DESIRED   SUCCESSFUL   AGE
@@ -135,6 +128,20 @@ kubernetes   ClusterIP   10.7.240.1   <none>        443/TCP   14h
 ```
 あれ？kubernetes本体以外のサービスたってなくね？ポートフォワード意味ある？
 
+ここ以降は下記を読みなさい。
+https://github.com/amygdala/code-snippets/tree/master/ml/kubeflow-pipelines/samples/kubeflow-tf
+
+## Install python SDK (python 3.5 above) 
+https://github.com/kubeflow/pipelines/releases
+```
+pip3 install https://storage.googleapis.com/ml-pipeline/release/0.1.2/kfp.tar.gz --upgrade
+```
+
+## run the example pipelines
+```
+python3 workflow1.py
+```
+
 
 
 Kubeflow pipelines UIにローカルのブラウザからGKE上のpod内のコンテナにアクセスできるようにポートフォワードの設定をしておく。
@@ -142,5 +149,7 @@ Kubeflow pipelines UIにローカルのブラウザからGKE上のpod内のコ�
 export NAMESPACE=kubeflow
 kubectl port-forward -n ${NAMESPACE} $(kubectl get pods -n ${NAMESPACE} --selector=service=ambassador -o jsonpath='{.items[0].metadata.name}') 8080:80
 ```
+
+Kubeflowは出てくるけど、kubeflowpipelinesのUIは出てこない
 
 
