@@ -92,6 +92,10 @@ https://github.com/kubeflow/pipelines/wiki/Deploy-the-Kubeflow-Pipelines-Service
   - 詳細はスクショ
  - 'kubectl' コンテクストをセットします。
  
+```
+ gcloud beta container --project "mlops-215604" clusters create "kubeflow-pipelines" --zone "us-central1-a" --username "admin" --cluster-version "1.9.7-gke.11" --machine-type "custom-8-40960" --image-type "COS" --disk-type "pd-standard" --disk-size "100" --scopes "https://www.googleapis.com/auth/cloud-platform" --num-nodes "4" --enable-cloud-logging --enable-cloud-monitoring --no-enable-ip-alias --network "projects/mlops-215604/global/networks/default" --subnetwork "projects/mlops-215604/regions/us-central1/subnetworks/default" --addons HorizontalPodAutoscaling,HttpLoadBalancing,KubernetesDashboard --enable-autoupgrade --enable-autorepair
+```
+ 
  
  ###  cloud shellの中で
 ```
