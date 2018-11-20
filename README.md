@@ -152,4 +152,6 @@ kubectl port-forward -n ${NAMESPACE} $(kubectl get pods -n ${NAMESPACE} --select
 
 Kubeflowは出てくるけど、kubeflowpipelinesのUIは出てこない
 
+https://github.com/kubeflow/pipelines/wiki/Build-a-Pipeline
+
 
