@@ -101,10 +101,12 @@ https://github.com/kubeflow/pipelines/wiki/Deploy-the-Kubeflow-Pipelines-Service
 ```
 gcloud container clusters get-credentials kubeflow-pipelines --zone us-central1-a --project mlops-215604
  
-kubectl create clusterrolebinding mlpipeline-deploy-admin --clusterrole=cluster-admin --user=taketoshi.kazusa@brainpad.cp.jp
-
-
+# kubectl create clusterrolebinding default-admin --clusterrole=cluster-admin --user=taketoshi.kazusa@brainpad.cp.jp
+kubectl create clusterrolebinding ml-pipeline-admin-binding --clusterrole=cluster-admin --user=$(gcloud config get-value account)
 kubectl create clusterrolebinding sa-admin --clusterrole=cluster-admin --serviceaccount=kubeflow:pipeline-runner
+
+
+
 ```
 
 
