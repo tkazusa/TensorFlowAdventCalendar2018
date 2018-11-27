@@ -160,3 +160,25 @@ Cloudshellからは”web preview”末尾に"pipeline"を付けて起動
 
 https://8080-dot-3326024-dot-devshell.appspot.com/pipeline/#/pipelines
 
+入れた！
+
+UIからgz.tarごとアップロード。
+
+ExperimentsとRunを定義する画面に映るので設定してみる。
+
+project: mlops-215604
+working-dir: gs://bp-kubeflow-pipelines/
+
+結果が走る。pipelineの今どこにいるかも可視化してくれている。
+
+kubeflow pipelines　UI -> notebook.
+ID:admin
+pass:admin
+
+
+
+Jupyternotebookに入れる。
+
+
+
+
