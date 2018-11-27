@@ -102,11 +102,13 @@ https://github.com/kubeflow/pipelines/wiki/Deploy-the-Kubeflow-Pipelines-Service
 gcloud container clusters get-credentials kubeflow-pipelines --zone us-central1-a --project mlops-215604
  
 # kubectl create clusterrolebinding default-admin --clusterrole=cluster-admin --user=taketoshi.kazusa@brainpad.cp.jp
-kubectl create clusterrolebinding ml-pipeline-admin-binding --clusterrole=cluster-admin --user=$(gcloud config get-value account)
-kubectl create clusterrolebinding sa-admin --clusterrole=cluster-admin --serviceaccount=kubeflow:pipeline-runner
+> kubectl create clusterrolebinding ml-pipeline-admin-binding --clusterrole=cluster-admin --user=$(gcloud config get-value account)
 
+clusterrolebinding.rbac.authorization.k8s.io "ml-pipeline-admin-binding" created
 
+> kubectl create clusterrolebinding sa-admin --clusterrole=cluster-admin --serviceaccount=kubeflow:pipeline-runner
 
+clusterrolebinding.rbac.authorization.k8s.io "sa-admin" created
 ```
 
 
@@ -143,7 +145,6 @@ python3 workflow1.py
 ```
 
 
-
 Kubeflow pipelines UIにローカルのブラウザからGKE上のpod内のコンテナにアクセスできるようにポートフォワードの設定をしておく。
 ```
 export NAMESPACE=kubeflow
@@ -154,4 +155,8 @@ Kubeflowは出てくるけど、kubeflowpipelinesのUIは出てこない
 
 https://github.com/kubeflow/pipelines/wiki/Build-a-Pipeline
 
+
+Cloudshellからは”web preview”末尾に"pipeline"を付けて起動
+
+https://8080-dot-3326024-dot-devshell.appspot.com/pipeline/#/pipelines
 
