@@ -247,6 +247,8 @@ gcr.io/kubeflow-images-public/tensorflow-1.10.1-notebook-cpu:v0.3.1
 
 ### 
 Cloudshellからは”web preview”末尾に"pipeline"を付けるとkubeflow pipeliensのUIへ飛ぶことができる。
+
+
 https://8080-dot-3326024-dot-devshell.appspot.com/pipeline/#/pipelines
 
 
@@ -267,9 +269,12 @@ https://github.com/kubeflow/pipelines/issues/179
 # Check for the Jupyter pod name `jupyter-<USER>` (Here user is 'admin')
 kubectl get pods -n kubeflow
 
-kubectl exec -it -n kubeflow jupyter-< username >  bash
-
+kubectl exec -it -n kubeflow jupyter-taketoshi-2ekazusa-40brainpad-2eco-2ejp 　bash
 jovyan@jupyter-admin:~$ vim .jupyter/jupyter_notebook_config.py`
+```
+c.NotebookApp.allow_origin='*'を追記
+
+```
 jovyan@jupyter-admin:~$ ps -auxw
 USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
 jovyan       1  0.0  0.0   4528   820 ?        Ss   12:44   0:00 tini -- start-singleuser.sh --ip="0.0.0.0" --port=8888 --allow-root
@@ -282,6 +287,9 @@ jovyan@jupyter-admin:~$ command terminated with exit code 137
 
 <USER>@CloudShell:~$ kubectl get pods  -n kubeflow |grep jupyter
 jupyter-admin                                            1/1       Running   2          16m
+
+export NAMESPACE=kubeflow
+kubectl port-forward -n ${NAMESPACE} $(kubectl get pods -n ${NAMESPACE} --selector=service=ambassador -o jsonpath='{.items[0].metadata.name}') 8080:80
 ```
 
 
