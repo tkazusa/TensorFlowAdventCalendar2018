@@ -244,7 +244,7 @@ https://8080-dot-3326024-dot-devshell.appspot.com/pipeline/#/pipelines
 # サンプルがいくつかある
 BasicとあるものはこのRepoにものがpipelineとしてpython dslとして記述されており、compileされてkubeflow piplinesにアップロードされた状態で置いてある。
 
-スクショ：
+スクショ：pipeliensトップ画面スクショ
 
 このBuild a Pipeline(https://www.kubeflow.org/docs/guides/pipelines/build-pipeline/#compile-the-samples)にもあるようにcompileされたのだろう
 
