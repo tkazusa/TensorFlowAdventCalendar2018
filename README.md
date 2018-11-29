@@ -196,6 +196,8 @@ Fetching cluster endpoint and auth data.
 kubeconfig entry generated for kubeflow-pipelines.
 > kubectl create clusterrolebinding ml-pipeline-admin-binding --clusterrole=cluster-admin --user=$(gcloud config get-value account)
 clusterrolebinding.rbac.authorization.k8s.io "ml-pipeline-admin-binding" created
+> kubectl create clusterrolebinding sa-admin --clusterrole=cluster-admin --serviceaccount=kubeflow:pipeline-runner
+clusterrolebinding.rbac.authorization.k8s.io "sa-admin" created
 ```
 
 
@@ -220,7 +222,7 @@ kubernetes   ClusterIP   10.7.240.1   <none>        443/TCP   18m
 Kubeflow Pipelines のpythonSDKをインストールする 
 https://github.com/kubeflow/pipelines/releases
 ```
-> pip3 install https://storage.googleapis.com/ml-pipeline/release/0.1.2/kfp.tar.gz --upgrade
+> pip3 install https://storage.googles.com/ml-pipeline/release/0.1.2/kfp.tar.gz --upgrade
 Installing collected packages: urllib3, six, certifi, python-dateutil, PyYAML, google-resumable-media, pytz, setuptools, chardet, idna, requests, protobuf, cachetools, pyasn1, rsa, pyasn1-modules, google-auth, googleapis-common-protos, google-api-core, google-cloud-core, google-cloud-storage, pycparser, cffi, asn1crypto, cryptography, PyJWT, adal, oauthlib, requests-oauthlib, websocket-client, kubernetes, kfp
   Running setup.py install for kfp ... done
 Successfully installed PyJWT-1.6.4 PyYAML-3.13 adal-1.2.0 asn1crypto-0.24.0 cachetools-3.0.0 certifi-2018.10.15 cffi-1.11.5 chardet-3.0.4 cryptography-2.4.2 google-api-core-1.5.2 google-auth-1.6.1 google-cloud-core-0.28.1 google-cloud-storage-1.13.0 google-resumable-media-0.3.1 googleapis-common-protos-1.5.5 idna-2.7 kfp-0.1 kubernetes-8.0.0 oauthlib-2.1.0 protobuf-3.6.1 pyasn1-0.4.4 pyasn1-modules-0.2.2 pycparser-2.19 python-dateutil-2.7.5 pytz-2018.7 requests-2.20.1 requests-oauthlib-1.0.0 rsa-4.0 setuptools-40.6.2 six-1.11.0 urllib3-1.24.1 websocket-client-0.54.0
@@ -241,6 +243,41 @@ kubectl port-forward -n ${NAMESPACE} $(kubectl get pods -n ${NAMESPACE} --select
 Cloudshellからは”web preview”末尾に"pipeline"を付けるとkubeflow pipeliensのUIへ飛ぶことができる。
 https://8080-dot-3326024-dot-devshell.appspot.com/pipeline/#/pipelines
 
+
+projectとworkind-dirをそれぞれ下記に設定
+project: mlops-215604
+working-dir: gs://bp-kubeflow-pipelines/
+
+
+## workflow1をやってみる
+- preprocess-modeとXX-modeをlocalで。
+- 動いた: スクリーンショット
+
+
+## Juptyter notebookでTFMAを可視化
+- https://www.kubeflow.org/docs/guides/components/jupyter/
+browser previewでkubeflowにアクセス、jupyterhubへ。
+- cloudshellから~/~/code-snippets/ml/kubeflow-pipelines/components/dataflow/tfma/tfma_expers.ipynbをダウンロード
+- jupyter上へ
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # サンプルがいくつかある
 BasicとあるものはこのRepoにものがpipelineとしてpython dslとして記述されており、compileされてkubeflow piplinesにアップロードされた状態で置いてある。
 
@@ -249,11 +286,36 @@ BasicとあるものはこのRepoにものがpipelineとしてpython dslとし�
 このBuild a Pipeline(https://www.kubeflow.org/docs/guides/pipelines/build-pipeline/#compile-the-samples)にもあるようにcompileされたのだろう
 
 https://github.com/kubeflow/pipelines/tree/master/samples/basic
-- Condition:  
+- Condition:  https://github.com/kubeflow/pipelines/blob/master/samples/basic/condition.py
+- Exit handler: https://github.com/kubeflow/pipelines/blob/master/samples/basic/exit_handler.py
+- Immediate Value: https://github.com/kubeflow/pipelines/blob/master/samples/basic/immediate_value.py
+- parallel_join: https://github.com/kubeflow/pipelines/blob/master/samples/basic/parallel_join.py
+- sequential.py: https://github.com/kubeflow/pipelines/blob/master/samples/basic/sequential.py
+- ML - TFX: Example pipeline that does classification with model analysis based on a public tax cab BigQuery dataset.
+  - https://github.com/kubeflow/pipelines/tree/master/samples/tfx
+  ->TFTとTFMAが一緒に楽しめる？しかもdataflow上で？
+- ML - XGboost: https://github.com/kubeflow/pipelines/tree/master/samples/xgboost-spark
+  - Google DataProc clusterを作る (Hadoop, spark)
+  - TFあんまり関係なさそう
+
+## TFX　Experimentsをやってみたいがエラーが出る。。。
+- Experimentsのところにvalidation-modeとpreprocess-modeがありましてDefaultはlocalになっている->CloudにするとDataflowが動く。API許可しておこう
+- predict-modeとanalyse-modeは？
+
+とりあえず、localで走らせてみた。
 - 
-- 
-- 
-- 
+
+TODO:
+- https://github.com/tensorflow/model-analysis/tree/master/examples/chicago_taxi を読む
+- 4つのパートがある
+  - TFDV
+  - TFT
+  - Train
+  - TFMA
+  -
+   
+   
+
 
 
 
