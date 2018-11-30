@@ -128,7 +128,7 @@ kubectl port-forward -n ${NAMESPACE} $(kubectl get pods -n ${NAMESPACE} --select
 
 
 
-## Juptyter notebookでTFMAを可視化
+## Juptyter notebookでTFMAを可視化するための extensionのインストール
 TFMAはインタラクティブにデータをスライスし、その結果をjupyter notebook上で可視化することができますが、そのためにExtensionをインストールする必要があります。
 
 ```
@@ -139,6 +139,29 @@ TFMAはインタラクティブにデータをスライスし、その結果をj
 > jupyter nbextension enable --py tensorflow_model_analysis
 ```
 ここで、permission denyが出てしまい、結局TFMAのレンダリングがされないままでした。解決しましたら追記します！
+
+
+
+## Running the examples
+Kubeflow pipelineに機械学習のpipelineを定義していきます。
+Kubeflow pipelinesのUIに入るとすでにいくつかサンプルのPipelineが定義されています。
+
+**スクショ**
+
+
+
+
+
+
+Running the examples
+projectとworkind-dirをそれぞれ下記に設定
+project: mlops-215604
+working-dir: gs://bp-kubeflow-pipelines/
+
+
+## workflow1をやってみる
+- preprocess-modeとXX-modeをlocalで。
+- 動いた: スクリーンショット
 
 
 
@@ -449,14 +472,6 @@ Cloudshellからは”web preview”末尾に"pipeline"を付けるとkubeflow p
 https://8080-dot-3326024-dot-devshell.appspot.com/pipeline/#/pipelines
 
 
-projectとworkind-dirをそれぞれ下記に設定
-project: mlops-215604
-working-dir: gs://bp-kubeflow-pipelines/
-
-
-## workflow1をやってみる
-- preprocess-modeとXX-modeをlocalで。
-- 動いた: スクリーンショット
 
 
 ## Fix jupyternotebook
