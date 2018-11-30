@@ -24,6 +24,12 @@ https://cloud.google.com/blog/products/ai-machine-learning/getting-started-kubef
 # Kubeflow Pipelines examples
 今回はkubeflowのslack(https://kubeflow.slack.com)で紹介されていたこのexample(https://github.com/amygdala/code-snippets/tree/master/ml/kubeflow-pipelines)を試してみます。kubeflow/pipelines(https://github.com/kubeflow/pipelines)の公式のrepoではありませんが、GKEを使ってkubeflow-pipelines上にTFXのコンポーネントを使って機械学習のワークフローをデプロイしていく良いsampleです。
 
+
+## TFX building blocks
+今回使われているTFXのコンポーネントはTensorFlow Transform, TEMA, TF servingの4つです。それぞれについては→を
+
+
+
 基本的にはREADME.md(https://github.com/amygdala/code-snippets/blob/master/ml/kubeflow-pipelines/README.md)に書かれている通りに動かしますが、そのままではエラーが出る部分などあるのでWorkaroundも示しながら進めたいと思います。
 
 # Instration and setup
@@ -189,44 +195,10 @@ https://github.com/tensorflow/model-analysis
 ```
 kubectl -n ${NAMESPACE} describe pods jupyter-taketoshi-2ekazusa-40brainpad-2eco-2ejp
 
-
 ```
 
-- 
-
-- どうやってTensorflowを含む機械学習フレームワークを使ったモデルをシステムにデプロイし、継続的に使い続けるか
-- Tensorflow Data Validationだけの評価でしてもしょうがないのでどの程度MLworkflowが展開しやすいのか調べる
-- Kubeflow pipeline上で実現したい。KubeflowはTFXを包含。そのワークフローの中で活用している。
-- KubeflowはGKE上にデプロイする。TFDVはApache Beamが必要になるから、Dataflowとか繋げられるの便利。
-- On-preでやりたいよってところはCiscoのUCSでkubeflowサポートしてるし、ハイブリッドでやるならGKEとUSCで、管理ツールとしてGKE-onpreかな
-
-# 用語の整理
-- kubeflow pipelines(https://github.com/kubeflow/pipelines)
-  - Kubeflow Pipelines SDK ってなんやhttps://github.com/kubeflow/pipelines/wiki
-  − Documents are here -> https://github.com/kubeflow/pipelines/wiki
-  - パイプラインをpythonDSLで記述できる
-- TFJob CRD(Cu7stom Resource Definitions library): Kube上でTFの分散学習できるようにする
-  - https://github.com/kubeflow/tf-operator/blob/master/tf_job_design_doc.md
-  - 基本的なリソースはすでにkubernetesに定義されているが、それ以外のものをCustomeで定義できる。(https://thinkit.co.jp/article/13610)
-  - TFjob はkubeflowで定義したCustomResourceDefinitions？。Driverとかのマウントが必要無くなる
-    - TFJobSpecs:The actual specification of our TensorFlow job, defined below.
-    - TFReplicaSpec: Specification for a set of TensorFlow processes, defined below.
-  - これを動かすと、tf-job-operator-configというConfigMap、Deployment, "tf-job-operator"というPodができる
-  - TFJob is a Kubernetes custom resource that makes it easy to run TensorFlow training jobs on Kubernetes.
   
-  
-
-
-## Introducting Kubeflow Pipelines
-- Kubeflow Pipelines はML workflowsをE2Eでmanagementするツール
-- https://github.com/amygdala/code-snippets/tree/master/ml/kubeflow-pipelines
-- https://github.com/tensorflow/model-analysis/tree/master/examples/chicago_taxiこれと同じ
-
-
-
-## TFX building blocks
-- Kubeflowは TFXのコンポーネントをブロックとして使ってます。
-- TensorFlow Transform, TEMA, TF serving
+#　以下下書き。
 
 
 ## TFT
@@ -260,115 +232,7 @@ kubectl -n ${NAMESPACE} describe pods jupyter-taketoshi-2ekazusa-40brainpad-2eco
 - データスキーマを勝手に作ってくれる、どんな値をとるか、範囲、ボキャブラリー(?)
 - 異常値を探してくれる。
 
-##
-Kubeflow piplinesでやるよ
-- https://chinagdg.org/2018/11/getting-started-with-kubeflow-pipelines/
 
-
-
-### Examples
-- https://github.com/amygdala/code-snippets/tree/master/ml/kubeflow-pipelines
-
-↓コマンドラインで
-https://github.com/kubeflow/pipelines/wiki/Deploy-the-Kubeflow-Pipelines-Service#deploy-kubeflow-pipelines
-
-## はじめに
-- gcloud をインストールする
-- APIsをEnableにしておく
-  - Dataflow
-  - BigQuery
-  - Cloud ML Engine
-  - Kubefnetes Engine
-  
- ## Set up a Kubernetes Engine (GKE) cluster
- - GKEクラスタを立ち上げる
-  - Machine type 8 vCPUs、Allow full accessto all cloud APIs
-  - 詳細はスクショ
- - 'kubectl' コンテクストをセットします。
- 
-```
- gcloud beta container --project "mlops-215604" clusters create "kubeflow-pipelines" --zone "us-central1-a" --username "admin" --cluster-version "1.9.7-gke.11" --machine-type "custom-8-40960" --image-type "COS" --disk-type "pd-standard" --disk-size "100" --scopes "https://www.googleapis.com/auth/cloud-platform" --num-nodes "4" --enable-cloud-logging --enable-cloud-monitoring --no-enable-ip-alias --network "projects/mlops-215604/global/networks/default" --subnetwork "projects/mlops-215604/regions/us-central1/subnetworks/default" --addons HorizontalPodAutoscaling,HttpLoadBalancing,KubernetesDashboard --enable-autoupgrade --enable-autorepair
-```
- 
- 
- ###  cloud shellの中で
-```
-gcloud container clusters get-credentials kubeflow-pipelines --zone us-central1-a --project mlops-215604
- 
-# kubectl create clusterrolebinding default-admin --clusterrole=cluster-admin --user=taketoshi.kazusa@brainpad.cp.jp
-> kubectl create clusterrolebinding ml-pipeline-admin-binding --clusterrole=cluster-admin --user=$(gcloud config get-value account)
-
-clusterrolebinding.rbac.authorization.k8s.io "ml-pipeline-admin-binding" created
-
-> kubectl create clusterrolebinding sa-admin --clusterrole=cluster-admin --serviceaccount=kubeflow:pipeline-runner
-
-clusterrolebinding.rbac.authorization.k8s.io "sa-admin" created
-```
-
-
-```
-PIPELINE_VERSION=0.1.2
-kubectl create -f https://storage.googleapis.com/ml-pipeline/release/$PIPELINE_VERSION/bootstrapper.yaml
-```
-
-```
-kubectl get job
-NAME                       DESIRED   SUCCESSFUL   AGE
-deploy-ml-pipeline-rt8zf   1         1            14h
-
-kubectl get svc
-NAME         TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
-kubernetes   ClusterIP   10.7.240.1   <none>        443/TCP   14h
-```
-あれ？kubernetes本体以外のサービスたってなくね？ポートフォワード意味ある？
-
-ここ以降は下記を読みなさい。
-https://github.com/amygdala/code-snippets/tree/master/ml/kubeflow-pipelines/samples/kubeflow-tf
-
-## Install python SDK (python 3.5 above) 
-https://github.com/kubeflow/pipelines/releases
-```
-pip3 install https://storage.googleapis.com/ml-pipeline/release/0.1.2/kfp.tar.gz --upgrade
-```
-
-## run the example pipelines
-```
-python3 workflow1.py
-```
-
-
-Kubeflow pipelines UIにローカルのブラウザからGKE上のpod内のコンテナにアクセスできるようにポートフォワードの設定をしておく。
-```
-export NAMESPACE=kubeflow
-kubectl port-forward -n ${NAMESPACE} $(kubectl get pods -n ${NAMESPACE} --selector=service=ambassador -o jsonpath='{.items[0].metadata.name}') 8080:80
-```
-
-Kubeflowは出てくるけど、kubeflowpipelinesのUIは出てこない
-
-https://github.com/kubeflow/pipelines/wiki/Build-a-Pipeline
-
-
-Cloudshellからは”web preview”末尾に"pipeline"を付けてアクセス
-https://8080-dot-3326024-dot-devshell.appspot.com/pipeline/#/pipelines
-
-入れた！
-
-UIからgz.tarごとアップロード。
-
-ExperimentsとRunを定義する画面に映るので設定してみる。
-
-project: mlops-215604
-working-dir: gs://bp-kubeflow-pipelines/
-
-結果が走る。pipelineの今どこにいるかも可視化してくれている。
-
-kubeflow pipelines　UI -> notebook.
-ID:admin
-pass:admin
-
-
-
-Jupyternotebookに入れる。
 
 
 
@@ -532,7 +396,6 @@ https://github.com/tensorflow/model-analysis
 ```
 kubectl -n ${NAMESPACE} describe pods jupyter-taketoshi-2ekazusa-40brainpad-2eco-2ejp
 
-
 ```
 
 https://github.com/kubeflow/pipelines/issues/179
@@ -540,11 +403,7 @@ https://github.com/kubeflow/kubeflow/issues/1130
 
 
 
-
-
 gs://bp-kubeflow-pipelines//workflow-1-wnrmr/
-
-
 
 
 # サンプルがいくつかある
@@ -555,37 +414,10 @@ BasicとあるものはこのRepoにものがpipelineとしてpython dslとし�
 このBuild a Pipeline(https://www.kubeflow.org/docs/guides/pipelines/build-pipeline/#compile-the-samples)にもあるようにcompileされたのだろう
 
 https://github.com/kubeflow/pipelines/tree/master/samples/basic
-- Condition:  https://github.com/kubeflow/pipelines/blob/master/samples/basic/condition.py
-- Exit handler: https://github.com/kubeflow/pipelines/blob/master/samples/basic/exit_handler.py
-- Immediate Value: https://github.com/kubeflow/pipelines/blob/master/samples/basic/immediate_value.py
-- parallel_join: https://github.com/kubeflow/pipelines/blob/master/samples/basic/parallel_join.py
-- sequential.py: https://github.com/kubeflow/pipelines/blob/master/samples/basic/sequential.py
 - ML - TFX: Example pipeline that does classification with model analysis based on a public tax cab BigQuery dataset.
-  - https://github.com/kubeflow/pipelines/tree/master/samples/tfx
-  ->TFTとTFMAが一緒に楽しめる？しかもdataflow上で？
+  - https://github.com/kubeflow/pipelines/tree/master/samples/tfx　-> workflowと使っているデータやスクリプトは同じ。エラー吐く。
 - ML - XGboost: https://github.com/kubeflow/pipelines/tree/master/samples/xgboost-spark
   - Google DataProc clusterを作る (Hadoop, spark)
   - TFあんまり関係なさそう
 
-## TFX　Experimentsをやってみたいがエラーが出る。。。
-- Experimentsのところにvalidation-modeとpreprocess-modeがありましてDefaultはlocalになっている->CloudにするとDataflowが動く。API許可しておこう
-- predict-modeとanalyse-modeは？
-
-とりあえず、localで走らせてみた。
-- 
-
-TODO:
 - https://github.com/tensorflow/model-analysis/tree/master/examples/chicago_taxi を読む
-- 4つのパートがある
-  - TFDV
-  - TFT
-  - Train
-  - TFMA
-  -
-   
-   
-
-
-
-
-
