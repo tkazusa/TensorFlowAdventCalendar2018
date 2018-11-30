@@ -1,5 +1,165 @@
 # TensorFlowAdventCalendar2018
-# 課題意識
+
+この記事はTensorFlow Advent Calendar 2018年 3日目の記事です。
+
+今年のAdvent CalendarはKubeflow pipeliensについて加工と思います。
+
+https://cloud.google.com/blog/products/ai-machine-learning/getting-started-kubeflow-pipelines
+
+
+− 
+# 機械学習システムの実環境へのデプロイ&サービング
+- 機械学習が普及した2018年ですが、PoC(Proof of Concept)を超えて実運用まで漕ぎ着けている事例が増えてきたとはいえ、実システムに組み込んで運用する場合のハードルは依然高いように見えます。 
+
+- High...
+- TFX
+- しかしそれぞれのコンポーネントがバラバラだと機械学習のワークフロー全体としては管理しづらく、再利用性もないため依然技術的負債感が拭えません。
+- そこで機械学習のワークフロー全体をEndToEndで管理できるようにするためのコンポーネントがkubeflow pipelineです。
+- kubeflow pipeline自体はkubeflow上にワークフローをpythonをベースにしたDSLとして記述してDeployするためのSDKや、機械学習のexperimentsやjobを管理する機能があります。
+- ワークフローマネジメント自体はKubeflowのCoreComponentである、Argoが動いているらしいですが、UIが整い、やっと統一感があるpipeline管理ツールが出てきたなというところです。
+
+- 2017年末にkubeflowが出てきてから丸一年、kubeflow自体はまだ0.4と発展途上であり、公式のexamplesもまともに動かなかったりします。このkubeflow pipelinesも例に漏れずexampleを動かすのさえ苦行ではありますが、ユーザーが増えて知見が貯まることを願ってご紹介をしようと思います。
+
+
+# Kubeflow Pipelines examples
+今回はkubeflowのslack(https://kubeflow.slack.com)で紹介されていたこのexample(https://github.com/amygdala/code-snippets/tree/master/ml/kubeflow-pipelines)を試してみます。kubeflow/pipelines(https://github.com/kubeflow/pipelines)の公式のrepoではありませんが、GKEを使ってkubeflow-pipelines上にTFXのコンポーネントを使って機械学習のワークフローをデプロイしていく良いsampleです。
+
+基本的にはREADME.md(https://github.com/amygdala/code-snippets/blob/master/ml/kubeflow-pipelines/README.md)に書かれている通りに動かしますが、そのままではエラーが出る部分などあるのでWorkaroundも示しながら進めたいと思います。
+
+# Instration and setup
+まずはGCPの環境を整えます。
+- GCPプロジェクトを作る
+- 必要なAPIをenableにする
+  - Cloud Machine Learning Engine、Kubernetes Engine、オプションでTFTやTFMAをDataflow上で動かしたり、データソースをcsvファイルからBigQueryに変えるなどする場合はそれぞれEnableする必要があります
+- gcloud sdkをインストールする、もしくはcloud shellを使う
+- GCSのバケットを用意しておきます。
+  - https://github.com/kubeflow/pipelines/wiki/Deploy-the-Kubeflow-Pipelines-Service#deploy-kubeflow-pipelines
+  - Backet名はXXXにしてあります。
+
+## Set up a Kubernetes Engine (GKE) cluster
+この通りにGKEクラスタを作成します。https://github.com/amygdala/code-snippets/blob/master/ml/kubeflow-pipelines/README.md#set-up-a-kubernetes-engine-gke-cluster
+
+```
+gcloud beta container --project <PROJECT_NAME> clusters create "kubeflow-pipelines" --zone "us-central1-a" --username "admin" --cluster-version "1.9.7-gke.11" --machine-type "custom-8-40960" --image-type "COS" --disk-type "pd-standard" --disk-size "100" --scopes "https://www.googleapis.com/auth/cloud-platform" --num-nodes "4" --enable-cloud-logging --enable-cloud-monitoring --no-enable-ip-alias --network "projects/mlops-215604/global/networks/default" --subnetwork "projects/<PROJECT_NAME>/regions/us-central1/subnetworks/default" --addons HorizontalPodAutoscaling,HttpLoadBalancing,KubernetesDashboard --enable-autoupgrade --enable-autorepair
+```
+PROJECT_NAMEには使っているGCPのプロジェクト名を入れて下さい。
+
+作ったクラスタをコンテキストに割り当て、ClusterRoleリソースを作成します。
+```
+> gcloud container clusters get-credentials kubeflow-pipelines --zone us-central1-a --project mlops-215604
+Fetching cluster endpoint and auth data.
+kubeconfig entry generated for kubeflow-pipelines.
+> kubectl create clusterrolebinding ml-pipeline-admin-binding --clusterrole=cluster-admin --user=$(gcloud config get-value account)
+clusterrolebinding.rbac.authorization.k8s.io "ml-pipeline-admin-binding" created
+> kubectl create clusterrolebinding sa-admin --clusterrole=cluster-admin --serviceaccount=kubeflow:pipeline-runner
+clusterrolebinding.rbac.authorization.k8s.io "sa-admin" created
+```
+## Install Kubeflow with Kubeflow Pipelines on the GKE cluster
+Kubeflowのこのページ(https://www.kubeflow.org/docs/guides/pipelines/deploy-pipelines-service/)の中のDeploy Kubeflow Pipelinesに従います。
+
+```
+> PIPELINE_VERSION=0.1.2
+> kubectl create -f https://storage.googleapis.com/ml-pipeline/release/$PIPELINE_VERSION/bootstrapper.yaml
+clusterrole.rbac.authorization.k8s.io "mlpipeline-deploy-admin" created
+clusterrolebinding.rbac.authorization.k8s.io "mlpipeline-admin-role-binding" created
+job.batch "deploy-ml-pipeline-qqk9j" created
+ > kubectl get job
+NAME                       DESIRED   SUCCESSFUL   AGE
+deploy-ml-pipeline-qqk9j   1         1            7m
+> kubectl get svc
+NAME         TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+kubernetes   ClusterIP   10.7.240.1   <none>        443/TCP   18m
+```
+
+Kubeflow pipelines UIにローカルのブラウザからGKE上のpod内のコンテナにアクセスできるようにポートフォワードの設定をしておく。
+```
+> export NAMESPACE=kubeflow
+> kubectl port-forward -n ${NAMESPACE} $(kubectl get pods -n ${NAMESPACE} --selector=service=ambassador -o jsonpath='{.items[0].metadata.name}') 8080:80
+
+```
+この状態でCloud shellから"Web Preview"するとKubeflowのとても簡素なダッシュボードに飛びます。
+またそのURLの末尾に/pipelinesを追加することでKubeflow pipelinesのUIに移れます。
+
+以上で、README.mdに記載上はKubeflow pipelinesのインストールは終わりました。しかし、これ以降のExamplesを動かすためにもう少し準備をします。
+
+Examplesを完走するためには、下記2点が必要です。
+- Jupyter notebookへ設定を追加する
+- 必要なJupyter extensionをインストールする
+
+## Jupyter notebookへ設定を追加する
+GKE上にjupyternotebookのサービス(?)は立ち上がるのですが、新しいnotebookを起動できません。
+このissue(https://github.com/kubeflow/pipelines/issues/179)を参考にしてFixすることができました。
+
+まずはjupyter hubからイメージを選択し、Spawnします。
+今回は、
+- gcr.io/kubeflow-images-public/tensorflow-1.10.1-notebook-cpu:v0.3.1
+を選択しました。
+
+立ち上げたら
+https://github.com/kubeflow/pipelines/issues/179
+```
+# Check for the Jupyter pod name `jupyter-<USER>` (Here user is 'admin')
+kubectl get pods -n kubeflow
+
+kubectl exec -it -n kubeflow jupyter-taketoshi-2ekazusa-40brainpad-2eco-2ejp　bash
+jovyan@jupyter-admin:~$ vim .jupyter/jupyter_notebook_config.py
+```
+c.NotebookApp.allow_origin='*'を追記
+
+再起動。
+```
+jovyan@jupyter-admin:~$ ps -auxw
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+jovyan       1  0.0  0.0   4528   820 ?        Ss   12:44   0:00 tini -- start-singleuser.sh --ip="0.0.0.0" --port=8888 --allow-root
+jovyan       5  0.1  0.8 292128 62168 ?        Sl   12:44   0:01 /opt/conda/bin/python /opt/conda/bin/jupyterhub-singleuser --ip="0.0.0.0" --port=8888 --allow-root
+jovyan      33  0.0  0.0  20316  4108 ?        Ss   12:52   0:00 bash
+jovyan      41  0.0  0.0  36080  3300 ?        R+   12:53   0:00 ps -auxw
+
+jovyan@jupyter-admin:~$ kill 1
+jovyan@jupyter-admin:~$ command terminated with exit code 137
+
+<USER>@CloudShell:~$ kubectl get pods  -n kubeflow |grep jupyter
+jupyter-admin                                            1/1       Running   2          16m
+
+export NAMESPACE=kubeflow
+kubectl port-forward -n ${NAMESPACE} $(kubectl get pods -n ${NAMESPACE} --selector=service=ambassador -o jsonpath='{.items[0].metadata.name}') 8080:80
+```
+これでnotebookを立ち上げることができるようになりました。
+
+
+
+## Juptyter notebookでTFMAを可視化
+TFMAはインタラクティブにデータをスライスし、その結果をjupyter notebook上で可視化することができますが、そのためにExtensionをインストールする必要があります。
+
+```
+# --system を付けた方が良いかも
+> jupyter nbextension enable --py widgetsnbextension
+> jupyter nbextension install --py --symlink tensorflow_model_analysis
+エラーが出る。。。
+> jupyter nbextension enable --py tensorflow_model_analysis
+```
+ここで、permission denyが出てしまい、結局TFMAのレンダリングがされないままでした。解決しましたら追記します！
+
+
+
+
+- https://www.kubeflow.org/docs/guides/components/jupyter/
+browser previewでkubeflowにアクセス、jupyterhubへ。
+- signin はGCPアカウント。
+- cloudshellから~/~/code-snippets/ml/kubeflow-pipelines/components/dataflow/tfma/tfma_expers.ipynbをダウンロード
+- jupyter上へ
+
+
+https://github.com/tensorflow/model-analysis
+
+```
+kubectl -n ${NAMESPACE} describe pods jupyter-taketoshi-2ekazusa-40brainpad-2eco-2ejp
+
+
+```
+
+- 
+
 - どうやってTensorflowを含む機械学習フレームワークを使ったモデルをシステムにデプロイし、継続的に使い続けるか
 - Tensorflow Data Validationだけの評価でしてもしょうがないのでどの程度MLworkflowが展開しやすいのか調べる
 - Kubeflow pipeline上で実現したい。KubeflowはTFXを包含。そのワークフローの中で活用している。
@@ -279,13 +439,6 @@ kubectl port-forward -n ${NAMESPACE} $(kubectl get pods -n ${NAMESPACE} --select
 ```
 
 
-TFMAの可視化のためにExtensionを入れる
-```
-# --system を付けた方が良いかも
-> jupyter nbextension enable --py widgetsnbextension
-> jupyter nbextension install --py --symlink tensorflow_model_analysis
-> jupyter nbextension enable --py tensorflow_model_analysis
-```
 
 
 
