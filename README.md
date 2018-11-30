@@ -150,18 +150,29 @@ Kubeflow pipelinesのUIに入るとすでにいくつかサンプルのPipeline�
 
 
 
-
-
-
-Running the examples
-projectとworkind-dirをそれぞれ下記に設定
-project: mlops-215604
-working-dir: gs://bp-kubeflow-pipelines/
-
-
 ## workflow1をやってみる
-- preprocess-modeとXX-modeをlocalで。
-- 動いた: スクリーンショット
+ここではすでに定義されたPipelineではなくて、新しくPipelineを定義して実行してみます。まずはDSLで書かれたスクリプトをコンパイルします。手順はこちらです。
+- https://github.com/amygdala/code-snippets/blob/master/ml/kubeflow-pipelines/samples/kubeflow-tf/README.md#example-workflow-1
+
+
+```
+> cd ~/code-snippets/ml/kubeflow-pipelines/samples/kubeflow-tf
+> python3 workflow1.py
+> ls
+README.md  workflow1.py  workflow1.py.tar.gz  workflow2.py
+```
+Kubeflow pipelines UIにこの`workflow1.py.tar.gz`をアップロードするとpipelineができます。
+
+
+** スクショ **
+
+UIからExperimentsを設定し、Runさせます。
+このとき`preprocess-mode`と`tfma-mode`を`local`で実行していますが、ここを'cloud'にするとDataflowで動作します。
+
+
+この後、pipelineが動きます。
+
+
 
 
 
