@@ -18,6 +18,27 @@ https://cloud.google.com/blog/products/ai-machine-learning/getting-started-kubef
 - kubeflow pipeline自体はkubeflow上にワークフローをpythonをベースにしたDSLとして記述してDeployするためのSDKや、機械学習のexperimentsやjobを管理する機能があります。
 - ワークフローマネジメント自体はKubeflowのCoreComponentである、Argoが動いているらしいですが、UIが整い、やっと統一感があるpipeline管理ツールが出てきたなというところです。
 
+現状、Kubeflow pipelineが活用すると言われているTFXコンポーネントは下記です。 
+**TFT**
+- tf.transform はtraning-serving skewを解決する、それはtrainとtestで前処理の仕方が違う。チームが異なってたり、計算資源が異なると起こり得る。
+- TFTのアウトプットはTF graphとして出力される
+- TFT はApache Beamを使ってTFTするよ、Google Cloud DataflowはManagedのApache Beamだよ、ExamplesはlocalのBeamを使っているけど。dataflowを使うこともできるよ
+
+**TFMA**
+- TFMA は様々な状況下や特徴、subsetにおけるモデルのパフォーマンスをビジュアライズしてくれる
+− TFT と同様にBeamが必要。
+
+** Tensorflow Data Validation**
+- 統計量のサマリを出してくれる
+- それぞれのFeatureのデータの分布や統計量、TrainとTestの差を見せてくれる
+- データスキーマを勝手に作ってくれる、どんな値をとるか、範囲、ボキャブラリー(?)
+- 異常値を探してくれる。
+
+**Cloud ML Engine Online Prediction**
+- 今回のexampleじゃ使ってないよ
+- モデルの管理ができていいよ
+
+
 - 2017年末にkubeflowが出てきてから丸一年、kubeflow自体はまだ0.4と発展途上であり、公式のexamplesもまともに動かなかったりします。このkubeflow pipelinesも例に漏れずexampleを動かすのさえ苦行ではありますが、ユーザーが増えて知見が貯まることを願ってご紹介をしようと思います。
 
 
@@ -155,6 +176,16 @@ Kubeflow pipelinesのUIに入るとすでにいくつかサンプルのPipeline�
 **スクショ**
 
 
+それぞれ、
+- https://www.kubeflow.org/docs/guides/pipelines/build-pipeline/#compile-the-samples
+- https://github.com/kubeflow/pipelines/tree/master/samples/basic
+- https://github.com/kubeflow/pipelines/tree/master/samples/tfx
+- https://github.com/kubeflow/pipelines/tree/master/samples/xgboost-spark
+がコンパイルされたものがアップロードされているようです。
+特にML-TFXはExample pipeline that does classification with model analysis based on a public tax cab BigQuery dataset.とあるように、workflowと基本的には同じっぽいです。(ちなみに、試しにやってみたら途中でエラー吐くので諦めました)。
+ML - XGboost: Google DataProc clusterを作る (Hadoop, spark)ので、TFあんまり関係なさそう
+
+
 
 ## workflow1をやってみる
 ここではすでに定義されたPipelineではなくて、新しくPipelineを定義して実行してみます。まずはDSLで書かれたスクリプトをコンパイルします。手順はこちらです。
@@ -197,25 +228,12 @@ kubectl -n ${NAMESPACE} describe pods jupyter-taketoshi-2ekazusa-40brainpad-2eco
 
 ```
 
+
   
 #　以下下書き。
 
 
-## TFT
-- tf.transform はtraning-serving skewを解決する、それはtrainとtestで前処理の仕方が違う。チームが異なってたり、計算資源が異なると起こり得る。
-- TFTのアウトプットはTF graphとして出力される
-- TFT はApache Beamを使ってTFTするよ、Google Cloud DataflowはManagedのApache Beamだよ
-- ExamplesはlocalのBeamを使っているけど。dataflowを使うこともできるよ
-− 
 
-## TFMA
-- TFMA は様々な状況下や特徴、subsetにおけるモデルのパフォーマンスをビジュアライズしてくれる
-− TFT と同様にBeamが必要。
-- ExampleはTFDVを直接は使ってないけど、schemaはTFDVによって作られたものだよ
-
-## Cloud ML Engine Online Prediction
-- 今回のexampleじゃ使ってないよ
-- モデルの管理ができていいよ
 
 ## Building workflows using kubeflow pipelines 
 
@@ -225,141 +243,7 @@ kubectl -n ${NAMESPACE} describe pods jupyter-taketoshi-2ekazusa-40brainpad-2eco
 
 - https://chinagdg.org/2018/11/getting-started-with-kubeflow-pipelines/
 
-
-## Tensorflow Data Validation
-- 統計量のサマリを出してくれる
-- それぞれのFeatureのデータの分布や統計量、TrainとTestの差を見せてくれる
-- データスキーマを勝手に作ってくれる、どんな値をとるか、範囲、ボキャブラリー(?)
-- 異常値を探してくれる。
-
-
-
-
-
-# Draft
-## 手順
-これに従う
-- https://github.com/amygdala/code-snippets/tree/master/ml/kubeflow-pipelines
-
-GKEクラスタ立ち上げる
-
-```
-> gcloud beta container --project "mlops-215604" clusters create "kubeflow-pipelines" --zone "us-central1-a" --username "admin" --cluster-version "1.9.7-gke.11" --machine-type "custom-8-40960" --image-type "COS" --disk-type "pd-standard" --disk-size "100" --scopes "https://www.googleapis.com/auth/cloud-platform" --num-nodes "4" --enable-cloud-logging --enable-cloud-monitoring --no-enable-ip-alias --network "projects/mlops-215604/global/networks/default" --subnetwork "projects/mlops-215604/regions/us-central1/subnetworks/default" --addons HorizontalPodAutoscaling,HttpLoadBalancing,KubernetesDashboard --enable-autoupgrade --enable-autorepair
- ```
-
-gcloudコマンドと紐付ける
-```
-> gcloud container clusters get-credentials kubeflow-pipelines --zone us-central1-a --project mlops-215604
-Fetching cluster endpoint and auth data.
-kubeconfig entry generated for kubeflow-pipelines.
-> kubectl create clusterrolebinding ml-pipeline-admin-binding --clusterrole=cluster-admin --user=$(gcloud config get-value account)
-clusterrolebinding.rbac.authorization.k8s.io "ml-pipeline-admin-binding" created
-> kubectl create clusterrolebinding sa-admin --clusterrole=cluster-admin --serviceaccount=kubeflow:pipeline-runner
-clusterrolebinding.rbac.authorization.k8s.io "sa-admin" created
-```
-
-
-https://www.kubeflow.org/docs/guides/pipelines/deploy-pipelines-service/ に従ってkubeflow pipelineをデプロイする。
-
-```
-> PIPELINE_VERSION=0.1.2
-# job を作る
-> kubectl create -f https://storage.googleapis.com/ml-pipeline/release/$PIPELINE_VERSION/bootstrapper.yaml
-clusterrole.rbac.authorization.k8s.io "mlpipeline-deploy-admin" created
-clusterrolebinding.rbac.authorization.k8s.io "mlpipeline-admin-role-binding" created
-job.batch "deploy-ml-pipeline-qqk9j" created
-# 
-> kubectl get job
-NAME                       DESIRED   SUCCESSFUL   AGE
-deploy-ml-pipeline-qqk9j   1         1            7m
-> kubectl get svc
-NAME         TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
-kubernetes   ClusterIP   10.7.240.1   <none>        443/TCP   18m
-```
-
-Kubeflow Pipelines のpythonSDKをインストールする 
-https://github.com/kubeflow/pipelines/releases
-```
-> pip3 install https://storage.googles.com/ml-pipeline/release/0.1.2/kfp.tar.gz --upgrade
-Installing collected packages: urllib3, six, certifi, python-dateutil, PyYAML, google-resumable-media, pytz, setuptools, chardet, idna, requests, protobuf, cachetools, pyasn1, rsa, pyasn1-modules, google-auth, googleapis-common-protos, google-api-core, google-cloud-core, google-cloud-storage, pycparser, cffi, asn1crypto, cryptography, PyJWT, adal, oauthlib, requests-oauthlib, websocket-client, kubernetes, kfp
-  Running setup.py install for kfp ... done
-Successfully installed PyJWT-1.6.4 PyYAML-3.13 adal-1.2.0 asn1crypto-0.24.0 cachetools-3.0.0 certifi-2018.10.15 cffi-1.11.5 chardet-3.0.4 cryptography-2.4.2 google-api-core-1.5.2 google-auth-1.6.1 google-cloud-core-0.28.1 google-cloud-storage-1.13.0 google-resumable-media-0.3.1 googleapis-common-protos-1.5.5 idna-2.7 kfp-0.1 kubernetes-8.0.0 oauthlib-2.1.0 protobuf-3.6.1 pyasn1-0.4.4 pyasn1-modules-0.2.2 pycparser-2.19 python-dateutil-2.7.5 pytz-2018.7 requests-2.20.1 requests-oauthlib-1.0.0 rsa-4.0 setuptools-40.6.2 six-1.11.0 urllib3-1.24.1 websocket-client-0.54.0
-```
-
-`~/code-snippets/ml/kubeflow-pipelines/samples/kubeflow-tf`へ移動する。
-README.mdにある手順に従ってpipelinesのexampleを試してみる。
-
-```
-> cd ~/code-snippets/ml/kubeflow-pipelines/samples/kubeflow-tf
-> python3 workflow1.py
-> ls
-README.md  workflow1.py  workflow1.py.tar.gz  workflow2.py
-```
-Kubeflow pipelines UIにローカルのブラウザからGKE上のpod内のコンテナにアクセスできるようにポートフォワードの設定をしておく。
-```
-export NAMESPACE=kubeflow
-kubectl port-forward -n ${NAMESPACE} $(kubectl get pods -n ${NAMESPACE} --selector=service=ambassador -o jsonpath='{.items[0].metadata.name}') 8080:80
-```
-
-### jupyterのプロセスを立ち上げ
-Spawnするイメージは下記を選択。
-- gcr.io/kubeflow-images-public/tensorflow-1.10.1-notebook-cpu:v0.3.1
-
-
-### 立ち上げたら
-https://github.com/kubeflow/pipelines/issues/179
-```
-# Check for the Jupyter pod name `jupyter-<USER>` (Here user is 'admin')
-kubectl get pods -n kubeflow
-
-kubectl exec -it -n kubeflow jupyter-taketoshi-2ekazusa-40brainpad-2eco-2ejp　bash
-jovyan@jupyter-admin:~$ vim .jupyter/jupyter_notebook_config.py
-```
-c.NotebookApp.allow_origin='*'を追記
-
-再起動。
-```
-jovyan@jupyter-admin:~$ ps -auxw
-USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
-jovyan       1  0.0  0.0   4528   820 ?        Ss   12:44   0:00 tini -- start-singleuser.sh --ip="0.0.0.0" --port=8888 --allow-root
-jovyan       5  0.1  0.8 292128 62168 ?        Sl   12:44   0:01 /opt/conda/bin/python /opt/conda/bin/jupyterhub-singleuser --ip="0.0.0.0" --port=8888 --allow-root
-jovyan      33  0.0  0.0  20316  4108 ?        Ss   12:52   0:00 bash
-jovyan      41  0.0  0.0  36080  3300 ?        R+   12:53   0:00 ps -auxw
-
-jovyan@jupyter-admin:~$ kill 1
-jovyan@jupyter-admin:~$ command terminated with exit code 137
-
-<USER>@CloudShell:~$ kubectl get pods  -n kubeflow |grep jupyter
-jupyter-admin                                            1/1       Running   2          16m
-
-export NAMESPACE=kubeflow
-kubectl port-forward -n ${NAMESPACE} $(kubectl get pods -n ${NAMESPACE} --selector=service=ambassador -o jsonpath='{.items[0].metadata.name}') 8080:80
-```
-
-
-
-
-
-
-### 
-Cloudshellからは”web preview”末尾に"pipeline"を付けるとkubeflow pipeliensのUIへ飛ぶことができる。
-
-https://8080-dot-3326024-dot-devshell.appspot.com/pipeline/#/pipelines
-
-
-
-
-## Fix jupyternotebook
-
-https://github.com/kubeflow/pipelines/issues/179
-```
-# Check for the Jupyter pod name `jupyter-<USER>` (Here user is 'admin')
-kubectl get pods -n kubeflow
-
-kubectl exec -it -n kubeflow jupyter-taketoshi-2ekazusa-40brainpad-2eco-2ejp　bash
-jovyan@jupyter-admin:~$ vim .jupyter/jupyter_notebook_config.py
-```
-c.NotebookApp.allow_origin='*'を追記
+## エクステンション問題
 
 ```
 > jupyter nbextension list
@@ -380,23 +264,9 @@ Known nbextensions:
 ```
 
 
+https://8080-dot-3326024-dot-devshell.appspot.com/pipeline/#/pipelines
 
 
-
-## Juptyter notebookでTFMAを可視化
-- https://www.kubeflow.org/docs/guides/components/jupyter/
-browser previewでkubeflowにアクセス、jupyterhubへ。
-- signin はGCPアカウント。
-- cloudshellから~/~/code-snippets/ml/kubeflow-pipelines/components/dataflow/tfma/tfma_expers.ipynbをダウンロード
-- jupyter上へ
-
-
-https://github.com/tensorflow/model-analysis
-
-```
-kubectl -n ${NAMESPACE} describe pods jupyter-taketoshi-2ekazusa-40brainpad-2eco-2ejp
-
-```
 
 https://github.com/kubeflow/pipelines/issues/179
 https://github.com/kubeflow/kubeflow/issues/1130
@@ -405,19 +275,3 @@ https://github.com/kubeflow/kubeflow/issues/1130
 
 gs://bp-kubeflow-pipelines//workflow-1-wnrmr/
 
-
-# サンプルがいくつかある
-BasicとあるものはこのRepoにものがpipelineとしてpython dslとして記述されており、compileされてkubeflow piplinesにアップロードされた状態で置いてある。
-
-スクショ：pipeliensトップ画面スクショ
-
-このBuild a Pipeline(https://www.kubeflow.org/docs/guides/pipelines/build-pipeline/#compile-the-samples)にもあるようにcompileされたのだろう
-
-https://github.com/kubeflow/pipelines/tree/master/samples/basic
-- ML - TFX: Example pipeline that does classification with model analysis based on a public tax cab BigQuery dataset.
-  - https://github.com/kubeflow/pipelines/tree/master/samples/tfx　-> workflowと使っているデータやスクリプトは同じ。エラー吐く。
-- ML - XGboost: https://github.com/kubeflow/pipelines/tree/master/samples/xgboost-spark
-  - Google DataProc clusterを作る (Hadoop, spark)
-  - TFあんまり関係なさそう
-
-- https://github.com/tensorflow/model-analysis/tree/master/examples/chicago_taxi を読む
