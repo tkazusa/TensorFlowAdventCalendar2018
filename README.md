@@ -171,25 +171,17 @@ UIからExperimentsを設定し、Runさせます。
 
 スクショ
 
+trainのblockからはTensorboardのダッシュボードに飛ぶこともできて便利です。
+
+
+
 ## TensorFlow Model Analysisでモデル解析
 ワークフローが走り終わるとJupyterNotebook上で学習されたモデルについての解析ができます。JupyterHubにサインインします。IDもパスワードはなんでも入れますが、GCPのアカウントを使うようにしました。解析にはこの[tfma_expers.ipynb](https://github.com/amygdala/code-snippets/blob/master/ml/kubeflow-pipelines/components/dataflow/tfma/tfma_expers.ipynb)を使います。`OUTPUT_PATH_PREFIX = 'gs://<YOUR_BUCKET_PATH>/<WORKFLOW_NAME>/'`の<YOUR_BUCKET_PATH>はクラスタ立てるときに指定したバケット名、<WORKFLOW_NAME>はCloud ConsoleでGoogle Strageの当該バケットを見に行くとディレクトリができているのでそれを使います。現状、レンダリングがうまくいっていないので全く意味をなしてませんが、一応実行できているようです。
 
 
 TFMA実行
 
-## the TF-serving endpointsを使ってみる
-今回のワークフローでは学習させたモデルがTF servingでサービングされています。
-クラウドシェルからでいけるかな？
 
-```
-> kubectl get services
-NAME         TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
-kubernetes   ClusterIP   10.7.240.1   <none>        443/TCP   1h
-> python chicago_taxi_client.py \
->  --num_examples=1 \
->  --examples_file='../taxi_model/data/eval/data.csv' \
->  --server=<EXTERNAL IP>:9000 --model_name=<SERVICE NAME>
-```
 
 # まとめ
 モデルやデータの管理など、まだまだ欲しい機能は出揃っていない感じですが素晴らしいツールだなと感じています。機械学習モデリングの後、実運用まで持っていくための試行錯誤はまだまだ続きそうですが、KubeflowやTFXなど便利なツールが普及して知見が貯まり、そのハードルがどんどん下がっていけば良いなと思いました。
@@ -247,3 +239,9 @@ https://www.kubeflow.org/docs/guides/components/jupyter/
 https://github.com/kubeflow/pipelines/issues/179
 https://github.com/kubeflow/kubeflow/issues/1130
 
+
+INFO:root:Deleting job kubeflow.trainer-sf7ls returned: {u'status': {u'completionTime': u'2018-12-01T19:23:16Z', u'conditions': [{u'status': u'True', u'lastUpdateTime': u'2018-12-01T19:19:16Z', u'lastTransitionTime': u'2018-12-01T19:19:16Z', u'reason': u'TFJobCreated', u'message': u'TFJob trainer-sf7ls is created.', u'type': u'Created'}, {u'status': u'False', u'lastUpdateTime': u'2018-12-01T19:19:44Z', u'lastTransitionTime': u'2018-12-01T19:19:16Z', u'reason': u'TFJobRunning', u'message': u'TFJob trainer-sf7ls is running.', u'type': u'Running'}, {u'status': u'True', u'lastUpdateTime': u'2018-12-01T19:23:16Z', u'lastTransitionTime': u'2018-12-01T19:19:16Z', u'reason': u'TFJobSucceeded', u'message': u'TFJob trainer-sf7ls is successfully completed.', u'type': u'Succeeded'}], u'tfReplicaStatuses': {u'PS': {}, u'Chief': {}, u'Worker': {}, u'Master': {}}, u'startTime': u'2018-12-01T19:19:42Z'}, u'kind': u'TFJob', u'spec': {u'cleanPodPolicy': u'Running', u'tfReplicaSpecs': {u'PS': {u'restartPolicy': u'OnFailure', u'template': {u'spec': {u'containers': [{u'image': u'gcr.io/google-samples/ml-pipeline-kubeflow-trainer-taxi', u'command': [u'python', u'-m', u'trainer.task', u'--eval-steps=100', u'--verbosity=INFO', u'--job-dir=gs://bp-kubeflow-pipelines//workflow-1-5bsd4/tf', u'--output-dir=gs://bp-kubeflow-pipelines//workflow-1-5bsd4/tf', u'--tf-transform-dir=gs://bp-kubeflow-pipelines//workflow-1-5bsd4/tft-train', u'--eval-files-prefix=eval_transformed', u'--train-files-dir=gs://bp-kubeflow-pipelines//workflow-1-5bsd4/tft-train', u'--eval-files-dir=gs://bp-kubeflow-pipelines//workflow-1-5bsd4/tft-eval', u'--train-steps=10000', u'--train-files-prefix=train_transformed'], u'name': u'tensorflow', u'resources': {}, u'ports': [{u'containerPort': 2222, u'name': u'tfjob-port'}]}]}, u'metadata': {u'creationTimestamp': None}}, u'replicas': 1}, u'Worker': {u'restartPolicy': u'OnFailure', u'template': {u'spec': {u'containers': [{u'image': u'gcr.io/google-samples/ml-pipeline-kubeflow-trainer-taxi', u'command': [u'python', u'-m', u'trainer.task', u'--eval-steps=100', u'--verbosity=INFO', u'--job-dir=gs://bp-kubeflow-pipelines//workflow-1-5bsd4/tf', u'--output-dir=gs://bp-kubeflow-pipelines//workflow-1-5bsd4/tf', u'--tf-transform-dir=gs://bp-kubeflow-pipelines//workflow-1-5bsd4/tft-train', u'--eval-files-prefix=eval_transformed', u'--train-files-dir=gs://bp-kubeflow-pipelines//workflow-1-5bsd4/tft-train', u'--eval-files-dir=gs://bp-kubeflow-pipelines//workflow-1-5bsd4/tft-eval', u'--train-steps=10000', u'--train-files-prefix=train_transformed'], u'name': u'tensorflow', u'resources': {}, u'ports': [{u'containerPort': 2222, u'name': u'tfjob-port'}]}]}, u'metadata': {u'creationTimestamp': None}}, u'replicas': 1}, u'Master': {u'restartPolicy': u'OnFailure', u'template': {u'spec': {u'containers': [{u'image': u'gcr.io/google-samples/ml-pipeline-kubeflow-trainer-taxi', u'command': [u'python', u'-m', u'trainer.task', u'--eval-steps=100', u'--verbosity=INFO', u'--job-dir=gs://bp-kubeflow-pipelines//workflow-1-5bsd4/tf', u'--output-dir=gs://bp-kubeflow-pipelines//workflow-1-5bsd4/tf', u'--tf-transform-dir=gs://bp-kubeflow-pipelines//workflow-1-5bsd4/tft-train', u'--eval-files-prefix=eval_transformed', u'--train-files-dir=gs://bp-kubeflow-pipelines//workflow-1-5bsd4/tft-train', u'--eval-files-dir=gs://bp-kubeflow-pipelines//workflow-1-5bsd4/tft-eval', u'--train-steps=10000', u'--train-files-prefix=train_transformed'], u'name': u'tensorflow', u'resources': {}, u'ports': [{u'containerPort': 2222, u'name': u'tfjob-port'}]}]}, u'metadata': {u'creationTimestamp': None}}, u'replicas': 1}}}, u'apiVersion': u'kubeflow.org/v1alpha2', u'metadata': {u'name': u'trainer-sf7ls', u'deletionTimestamp': u'2018-12-01T19:23:16Z', u'clusterName': u'', u'deletionGracePeriodSeconds': 0, u'namespace': u'kubeflow', u'generation': 0, u'finalizers': [u'foregroundDeletion'], u'resourceVersion': u'5990', u'generateName': u'trainer-', u'creationTimestamp': u'2018-12-01T19:19:16Z', u'selfLink': u'/apis/kubeflow.org/v1alpha2/namespaces/kubeflow/tfjobs/trainer-sf7ls', u'uid': u'fe9ecafa-f59d-11e8-9840-42010a8000d6'}}
+Exception R`
+
+
+RuntimeError: RuntimeError('cannot join current thread',) in <bound method ApiClient.__del__ of <kubernetes.client.api_client.ApiClient object at 0x7f3586231250>> ignored
