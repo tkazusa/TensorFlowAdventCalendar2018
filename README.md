@@ -188,8 +188,22 @@ kubectl -n ${NAMESPACE} describe pods jupyter-<USER>
 
 JupyterNotebookのスクショ
 
-## サービングの
+## the TF-serving endpointsを使ってみる
+今回のワークフローでは学習させたモデルがTF servingでサービングされています。
+クラウドシェルからでいけるかな？
 
+```
+> kubectl get services
+
+
+> python chicago_taxi_client.py \
+>  --num_examples=1 \
+>  --examples_file='../taxi_model/data/eval/data.csv' \
+>  --server=<EXTERNAL IP>:9000 --model_name=<SERVICE NAME>
+```
+
+# まとめ
+モデルやデータの管理など、まだまだ欲しい機能は出揃っていない感じですが素晴らしいツールだなと感じています。機械学習モデリングの後、実運用まで持っていくための試行錯誤はまだまだ続きそうですが、KubeflowやTFXなど便利なツールが普及して知見が貯まり、そのハードルがどんどん下がっていけば良いなと思いました。
 
   
 #　以下下書き。
