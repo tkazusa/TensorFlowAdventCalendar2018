@@ -15,15 +15,9 @@ kubeflow pipelinesはKubeflowの新しいコンポーネントであり、機械
 
 
 # Kubeflow Pipelines examples
-今回はkubeflowのslack(https://kubeflow.slack.com)で紹介されていたこのexample(https://github.com/amygdala/code-snippets/tree/master/ml/kubeflow-pipelines)を試してみます。kubeflow/pipelines(https://github.com/kubeflow/pipelines)の公式のrepoではありませんが、GKEを使ってkubeflow-pipelines上にTFXのコンポーネントを使って機械学習のワークフローをデプロイしていく良いsampleです。
+今回はkubeflowの[slack](https://kubeflow.slack.com)で紹介されていたこの[examples](https://github.com/amygdala/code-snippets/tree/master/ml/kubeflow-pipelines)を試してみます。GKEを使ってBigQueryのChicago taxiのデータを用いて、TFXのコンポーネントを使って機械学習のワークフローを定義し、サービングまで機械学習モデルをデプロイしていく良いチュートリアルです。
 
-
-## TFX building blocks
-今回使われているTFXのコンポーネントはTensorFlow Transform, TEMA, TF servingの4つです。それぞれについては→を
-
-
-
-基本的にはREADME.md(https://github.com/amygdala/code-snippets/blob/master/ml/kubeflow-pipelines/README.md)に書かれている通りに動かしますが、そのままではエラーが出る部分などあるのでWorkaroundも示しながら進めたいと思います。
+基本的には[README.md](https://github.com/amygdala/code-snippets/blob/master/ml/kubeflow-pipelines/README.md)に書かれている通りに動かしますが、そのままではエラーが出る部分などあるのでworkaroundも示しながら進めたいと思います。
 
 # Instration and setup
 まずはGCPの環境を整えます。
