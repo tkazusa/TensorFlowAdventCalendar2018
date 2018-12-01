@@ -3,7 +3,7 @@
 
 
 # 機械学習システムの実環境へのデプロイ&サービング
-機械学習が普及した2018年ですが、PoC(Proof of Concept)を超えて実運用まで漕ぎ着けている事例が増えてきたとはいえ、実システムに組み込んで運用する場合のハードルは依然高いように見えます。 その理由としては、2014年にGoogleから出された論文[Machine Learning: The High Interest Credit Card of Technical Debt] (https://ai.google/research/pubs/pub43146)でいくつか課題が挙げられており、それらの一つの解決策として機械学習プラットフォームである[TensorFlow Extended(TFX)](https://www.tensorflow.org/tfx/)が提案されています。
+機械学習が普及した2018年ですが、PoC(Proof of Concept)を超えて実運用まで漕ぎ着けている事例が増えてきたとはいえ、実システムに組み込んで運用する場合のハードルは依然高いように見えます。 その理由としては、2014年にGoogleから出された論文[Machine Learning: The High Interest Credit Card of Technical Debt] (https://ai.google/research/pubs/pub43146) でいくつか課題が挙げられており、それらの一つの解決策として機械学習プラットフォームである[TensorFlow Extended(TFX)](https://www.tensorflow.org/tfx/)が提案されています。
 
 現在、OSSとして公開されているTFXはそれぞのコンポーネントがバラバラであり、機械学習のワークフロー全体としては管理しづらいものでした。そこで機械学習のワークフロー全体をEndToEndで管理できるようにするためのコンポーネントがkubeflow pipelineです。以前から機械学習システム構築するためのツールキットである[Kubeflow](https://www.kubeflow.org/)にTFXはその一部が取り込まれていましたが、今年11月に[発表](https://cloud-ja.googleblog.com/2018/11/introducing-ai-hub-and-kubeflow-pipelines-making-ai-simpler-faster-and-more-useful-for-businesses.html)されたKubeflow pipelinesでワークフローの管理が洗練されより使いやすくなったように感じます。
 
@@ -152,14 +152,12 @@ Kubeflow Pipelineに機械学習のPipelineを定義していきます。Kubeflo
 スクショ
 
 
-ワークフローは(ここ)[https://www.kubeflow.org/docs/guides/pipelines/build-pipeline/#compile-the-samples] にあるように、DSLで書かれた.pyファイルをコンパイルして、Kubeflow PipelinesのUIにアップロードすることでデプロイできます。
-現在、サンプルとして挙げられているものはそれぞれ、(ここのSamples)[https://github.com/kubeflow/pipelines/tree/master/samples/]にあげられているもののようです。特にML-TFXはExample pipeline that does classification with model analysis based on a public tax cab BigQuery dataset.とあるように、workflowと基本的には同じっぽいです。(ちなみに、試しにやってみたら途中でエラー吐くので諦めました)。
+ワークフローは[ここ](https://www.kubeflow.org/docs/guides/pipelines/build-pipeline/#compile-the-samples)にあるように、DSLで書かれた.pyファイルをコンパイルして、Kubeflow PipelinesのUIにアップロードすることでデプロイできます。
+現在、サンプルとして挙げられているものはそれぞれ、[ここのSamples](https://github.com/kubeflow/pipelines/tree/master/samples)にあげられているもののようです。特にML-TFXはExample pipeline that does classification with model analysis based on a public tax cab BigQuery dataset.とあるように、workflowと基本的には同じっぽいです。(ちなみに、試しにやってみたら途中でエラー吐くので諦めました)。
 
 
 ## workflow1をやってみる
-ここではすでに定義されたPipelineではなくて、新しくPipelineを定義して実行してみます。まずはDSLで書かれたスクリプトをコンパイルします。手順はこちらです。
-- https://github.com/amygdala/code-snippets/blob/master/ml/kubeflow-pipelines/samples/kubeflow-tf/README.md#example-workflow-1
-
+ここではすでにUI上にあるPipelineではなくて、新しくPipelineをアップロードして実行するようです。まずはDSLで書かれたスクリプトをコンパイルします。手順は[こちら](https://github.com/amygdala/code-snippets/blob/master/ml/kubeflow-pipelines/samples/kubeflow-tf/README.md#example-workflow-1)です。
 
 ```
 > cd ~/code-snippets/ml/kubeflow-pipelines/samples/kubeflow-tf
@@ -170,32 +168,27 @@ README.md  workflow1.py  workflow1.py.tar.gz  workflow2.py
 Kubeflow pipelines UIにこの`workflow1.py.tar.gz`をアップロードするとpipelineができます。
 
 
-** スクショ **
+スクショ 
 
 UIからExperimentsを設定し、Runさせます。
 このとき`preprocess-mode`と`tfma-mode`を`local`で実行していますが、ここを'cloud'にするとDataflowで動作します。
 
+スクショ
 
-この後、pipelineが動きます。
+この後ワークフローが走ります。UI眺めているだけではあまり実感無いですが、CSVにあったデータがTFTで処理され機械学習モデルに学習され、MLEngineにデプロイされてサービングされてます。
 
-
-
-
-
-
-- https://www.kubeflow.org/docs/guides/components/jupyter/
-browser previewでkubeflowにアクセス、jupyterhubへ。
-- signin はGCPアカウント。
-- cloudshellから~/~/code-snippets/ml/kubeflow-pipelines/components/dataflow/tfma/tfma_expers.ipynbをダウンロード
-- jupyter上へ
-
-
-https://github.com/tensorflow/model-analysis
-
+## TensorFlow Model Analysisでモデル解析
+ワークフローが走り終わるとJupyterNotebook上で学習されたモデルについての解析ができます。JupyterHubにサインインします。IDもパスワードはなんでも入れますが、GCPのアカウントを使うようにしました。解析にはこの[tfma_expers.ipynb](https://github.com/amygdala/code-snippets/blob/master/ml/kubeflow-pipelines/components/dataflow/tfma/tfma_expers.ipynb)を使います。`OUTPUT_PATH_PREFIX = 'gs://<YOUR_BUCKET_PATH>/<WORKFLOW_NAME>/'`の<YOUR_BUCKET_PATH>はクラスタ立てるときに指定したバケット名、<WORKFLOW_NAME>は下記コマンド、もしくはCloud ConsoleでGoogle Strageの当該バケットを見に行くとディレクトリができているのでそれを使います。
 ```
 kubectl -n ${NAMESPACE} describe pods jupyter-taketoshi-2ekazusa-40brainpad-2eco-2ejp
-
+kubectl -n ${NAMESPACE} describe pods jupyter-<USER>
 ```
+
+現状、レンダリングがうまくいっていないので全く意味をなしてませんが、一応実行できているようです。
+
+JupyterNotebookのスクショ
+
+## サービングの
 
 
   
@@ -237,9 +230,6 @@ https://8080-dot-3326024-dot-devshell.appspot.com/pipeline/#/pipelines
 
 
 
-https://github.com/kubeflow/pipelines/issues/179
-https://github.com/kubeflow/kubeflow/issues/1130
-
 
 
 gs://bp-kubeflow-pipelines//workflow-1-wnrmr/
@@ -248,5 +238,9 @@ gs://bp-kubeflow-pipelines//workflow-1-wnrmr/
 
 
 # 参考リンク
+https://www.kubeflow.org/docs/guides/components/jupyter/
 
+
+https://github.com/kubeflow/pipelines/issues/179
+https://github.com/kubeflow/kubeflow/issues/1130
 
