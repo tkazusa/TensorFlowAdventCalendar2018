@@ -3,7 +3,7 @@
 
 
 # 機械学習システムの実環境へのデプロイ&サービング
-機械学習が普及した2018年ですが、PoC(Proof of Concept)を超えて実運用まで漕ぎ着けている事例が増えてきたとはいえ、実システムに組み込んで運用する場合のハードルは依然高いように見えます。 その理由としては、2014年にGoogleから出された論文「[Machine Learning: The High Interest Credit Card of Technical Debt] (https://ai.google/research/pubs/pub43146)」でいくつか課題が挙げられており、それらの一つの解決策として機械学習プラットフォームである[TensorFlow Extended(TFX)](https://www.tensorflow.org/tfx/)が提案されています。
+機械学習が普及した2018年ですが、PoC(Proof of Concept)を超えて実運用まで漕ぎ着けている事例が増えてきたとはいえ、実システムに組み込んで運用する場合のハードルは依然高いように見えます。 その理由としては、2014年にGoogleから出された論文[Machine Learning: The High Interest Credit Card of Technical Debt] (https://ai.google/research/pubs/pub43146)でいくつか課題が挙げられており、それらの一つの解決策として機械学習プラットフォームである[TensorFlow Extended(TFX)](https://www.tensorflow.org/tfx/)が提案されています。
 
 現在、OSSとして公開されているTFXはそれぞのコンポーネントがバラバラであり、機械学習のワークフロー全体としては管理しづらいものでした。そこで機械学習のワークフロー全体をEndToEndで管理できるようにするためのコンポーネントがkubeflow pipelineです。以前から機械学習システム構築するためのツールキットである[Kubeflow](https://www.kubeflow.org/)にTFXはその一部が取り込まれていましたが、今年11月に[発表](https://cloud-ja.googleblog.com/2018/11/introducing-ai-hub-and-kubeflow-pipelines-making-ai-simpler-faster-and-more-useful-for-businesses.html)されたKubeflow pipelinesでワークフローの管理が洗練されより使いやすくなったように感じます。
 
@@ -73,7 +73,7 @@ NAME         TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
 kubernetes   ClusterIP   10.7.240.1   <none>        443/TCP   18m
 ```
 
-Kubeflow pipelines UIにローカルのブラウザからGKE上のpod内のコンテナにアクセスできるようにポートフォワードの設定をしておく。
+Kubeflow Pipelines UIにローカルのブラウザからGKE上のpod内のコンテナにアクセスできるようにポートフォワードの設定をしておきます。
 
 ```
 > export NAMESPACE=kubeflow
@@ -96,12 +96,10 @@ Kubeflow pipelines UIにローカルのブラウザからGKE上のpod内のコ�
 - 必要なJupyter extensionをインストールする
 
 # Jupyter notebookへ設定を追加する
-GKE上にjupyter notebookのサービス(?)は立ち上がるのですが、新しいnotebookを起動できません。しかしこのissue(https://github.com/kubeflow/pipelines/issues/179)を参考にしてFixすることができました。
+GKE上にjupyter notebookのサービス(?)は立ち上がるのですが、新しいnotebookを起動できません。しかしこの[issue](https://github.com/kubeflow/pipelines/issues/179)を参考にしてFixすることができました。
 
 まずはjupyter hubからイメージを選択し、Spawnします。
-今回は、
-- gcr.io/kubeflow-images-public/tensorflow-1.10.1-notebook-cpu:v0.3.1
-を選択しました。
+今回は`gcr.io/kubeflow-images-public/tensorflow-1.10.1-notebook-cpu:v0.3.1`を選択しました。
 
 立ち上げたら
 https://github.com/kubeflow/pipelines/issues/179
