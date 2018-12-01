@@ -5,7 +5,7 @@
 # 機械学習システムの実環境へのデプロイ&サービング
 機械学習が普及した2018年ですが、PoC(Proof of Concept)を超えて実運用まで漕ぎ着けている事例が増えてきたとはいえ、実システムに組み込んで運用する場合のハードルは依然高いように見えます。 その理由としては、2014年にGoogleから出された論文「[Machine Learning: The High Interest Credit Card of Technical Debt] (https://ai.google/research/pubs/pub43146)」でいくつか課題が挙げられており、それらの一つの解決策として機械学習プラットフォームである[TensorFlow Extended(TFX)](https://www.tensorflow.org/tfx/)が提案されています。
 
-現在、OSSとして公開されているTFXはそれぞのコンポーネントがバラバラであり、機械学習のワークフロー全体としては管理しづらいものでした。そこで機械学習のワークフロー全体をEndToEndで管理できるようにするためのコンポーネントがkubeflow pipelineです。以前から機械学習システム構築するためのツールキットである[Kubeflow](https://www.kubeflow.org/)にTFXはその一部が取り込まれていましたが、今年11月に発表(https://cloud-ja.googleblog.com/2018/11/introducing-ai-hub-and-kubeflow-pipelines-making-ai-simpler-faster-and-more-useful-for-businesses.html)されたKubeflow pipelinesでワークフローの管理が洗練されより使いやすくなったように感じます。
+現在、OSSとして公開されているTFXはそれぞのコンポーネントがバラバラであり、機械学習のワークフロー全体としては管理しづらいものでした。そこで機械学習のワークフロー全体をEndToEndで管理できるようにするためのコンポーネントがkubeflow pipelineです。以前から機械学習システム構築するためのツールキットである[Kubeflow](https://www.kubeflow.org/)にTFXはその一部が取り込まれていましたが、今年11月に[発表](https://cloud-ja.googleblog.com/2018/11/introducing-ai-hub-and-kubeflow-pipelines-making-ai-simpler-faster-and-more-useful-for-businesses.html)されたKubeflow pipelinesでワークフローの管理が洗練されより使いやすくなったように感じます。
 
 2017年末にkubeflowが出てきてから一年、kubeflow自体はまだ0.4と発展途上であり、公式のexamplesもまともに動かなかったりします。このkubeflow pipelinesも例に漏れずexampleを動かすのさえ苦行ではありますが、ユーザーが増えて知見が貯まることを願ってご紹介をしようと思います。
 
@@ -55,7 +55,7 @@ clusterrolebinding.rbac.authorization.k8s.io "sa-admin" created
 
 
 # Kubeflow Pipelinesのインストール
-Kubeflowのこのページ(https://www.kubeflow.org/docs/guides/pipelines/deploy-pipelines-service/)の中のDeploy Kubeflow Pipelinesに従います。
+Kubeflowの[このページ](https://www.kubeflow.org/docs/guides/pipelines/deploy-pipelines-service/)の中のDeploy Kubeflow Pipelinesに従います。
 
 Kubeflow PipelinesをGKEクラスタにデプロイします。
 
