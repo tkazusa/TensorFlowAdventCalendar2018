@@ -172,15 +172,10 @@ UIからExperimentsを設定し、Runさせます。
 スクショ
 
 ## TensorFlow Model Analysisでモデル解析
-ワークフローが走り終わるとJupyterNotebook上で学習されたモデルについての解析ができます。JupyterHubにサインインします。IDもパスワードはなんでも入れますが、GCPのアカウントを使うようにしました。解析にはこの[tfma_expers.ipynb](https://github.com/amygdala/code-snippets/blob/master/ml/kubeflow-pipelines/components/dataflow/tfma/tfma_expers.ipynb)を使います。`OUTPUT_PATH_PREFIX = 'gs://<YOUR_BUCKET_PATH>/<WORKFLOW_NAME>/'`の<YOUR_BUCKET_PATH>はクラスタ立てるときに指定したバケット名、<WORKFLOW_NAME>は下記コマンド、もしくはCloud ConsoleでGoogle Strageの当該バケットを見に行くとディレクトリができているのでそれを使います。
-```
-kubectl -n ${NAMESPACE} describe pods jupyter-taketoshi-2ekazusa-40brainpad-2eco-2ejp
-kubectl -n ${NAMESPACE} describe pods jupyter-<USER>
-```
+ワークフローが走り終わるとJupyterNotebook上で学習されたモデルについての解析ができます。JupyterHubにサインインします。IDもパスワードはなんでも入れますが、GCPのアカウントを使うようにしました。解析にはこの[tfma_expers.ipynb](https://github.com/amygdala/code-snippets/blob/master/ml/kubeflow-pipelines/components/dataflow/tfma/tfma_expers.ipynb)を使います。`OUTPUT_PATH_PREFIX = 'gs://<YOUR_BUCKET_PATH>/<WORKFLOW_NAME>/'`の<YOUR_BUCKET_PATH>はクラスタ立てるときに指定したバケット名、<WORKFLOW_NAME>はCloud ConsoleでGoogle Strageの当該バケットを見に行くとディレクトリができているのでそれを使います。現状、レンダリングがうまくいっていないので全く意味をなしてませんが、一応実行できているようです。
 
-現状、レンダリングがうまくいっていないので全く意味をなしてませんが、一応実行できているようです。
 
-JupyterNotebookのスクショ
+TFMA実行
 
 ## the TF-serving endpointsを使ってみる
 今回のワークフローでは学習させたモデルがTF servingでサービングされています。
@@ -188,8 +183,8 @@ JupyterNotebookのスクショ
 
 ```
 > kubectl get services
-
-
+NAME         TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+kubernetes   ClusterIP   10.7.240.1   <none>        443/TCP   1h
 > python chicago_taxi_client.py \
 >  --num_examples=1 \
 >  --examples_file='../taxi_model/data/eval/data.csv' \
