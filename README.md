@@ -19,17 +19,21 @@ kubeflow pipelinesはKubeflowの新しいコンポーネントであり、機械
 
 基本的には[README.md](https://github.com/amygdala/code-snippets/blob/master/ml/kubeflow-pipelines/README.md)に書かれている通りに動かしますが、そのままではエラーが出る部分などあるのでworkaroundも示しながら進めたいと思います。
 
-# Instration and setup
-まずはGCPの環境を整えます。
+1. GCP環境のセットアップ
+2. Kubernetes Engine (GKE) クラスタの準備
+3. Kubeflow Pipelinesのインストール
+4. 
+
+# GCP環境のセットアップ
+まずはGCPの環境を整えます。大まかな手順としては下記です。
 - GCPプロジェクトを作る
 - 必要なAPIをenableにする
   - Cloud Machine Learning Engine、Kubernetes Engine、オプションでTFTやTFMAをDataflow上で動かしたり、データソースをcsvファイルからBigQueryに変えるなどする場合はそれぞれEnableする必要があります
 - gcloud sdkをインストールする、もしくはcloud shellを使う
-- GCSのバケットを用意しておきます。
-  - https://github.com/kubeflow/pipelines/wiki/Deploy-the-Kubeflow-Pipelines-Service#deploy-kubeflow-pipelines
+- GCSのバケットを用意する
   - Backet名はXXXにしてあります。
 
-## Set up a Kubernetes Engine (GKE) cluster
+# Kubernetes Engine (GKE) クラスタの準備
 この通りにGKEクラスタを作成します。https://github.com/amygdala/code-snippets/blob/master/ml/kubeflow-pipelines/README.md#set-up-a-kubernetes-engine-gke-cluster
 
 ```
@@ -47,8 +51,12 @@ clusterrolebinding.rbac.authorization.k8s.io "ml-pipeline-admin-binding" created
 > kubectl create clusterrolebinding sa-admin --clusterrole=cluster-admin --serviceaccount=kubeflow:pipeline-runner
 clusterrolebinding.rbac.authorization.k8s.io "sa-admin" created
 ```
-## Install Kubeflow with Kubeflow Pipelines on the GKE cluster
+
+
+# Kubeflow Pipelinesのインストール
 Kubeflowのこのページ(https://www.kubeflow.org/docs/guides/pipelines/deploy-pipelines-service/)の中のDeploy Kubeflow Pipelinesに従います。
+
+Kubeflow PipelinesをGKEクラスタにデプロイします。
 
 ```
 > PIPELINE_VERSION=0.1.2
@@ -65,23 +73,29 @@ kubernetes   ClusterIP   10.7.240.1   <none>        443/TCP   18m
 ```
 
 Kubeflow pipelines UIにローカルのブラウザからGKE上のpod内のコンテナにアクセスできるようにポートフォワードの設定をしておく。
+
 ```
 > export NAMESPACE=kubeflow
 > kubectl port-forward -n ${NAMESPACE} $(kubectl get pods -n ${NAMESPACE} --selector=service=ambassador -o jsonpath='{.items[0].metadata.name}') 8080:80
 
 ```
+
 この状態でCloud shellから"Web Preview"するとKubeflowのとても簡素なダッシュボードに飛びます。
+
+- スクショ
+
+
 またそのURLの末尾に/pipelinesを追加することでKubeflow pipelinesのUIに移れます。
 
-以上で、README.mdに記載上はKubeflow pipelinesのインストールは終わりました。しかし、これ以降のExamplesを動かすためにもう少し準備をします。
+- スクショ
 
-Examplesを完走するためには、下記2点が必要です。
+
+以上で[README.md](https://github.com/amygdala/code-snippets/blob/master/ml/kubeflow-pipelines/README.md)に記載されているExamplesのための準備は終わりました。しかし、これ以降のExamplesを動かすためにもう少し準備をします。Examplesを完走するためには、下記2点が必要です。
 - Jupyter notebookへ設定を追加する
 - 必要なJupyter extensionをインストールする
 
-## Jupyter notebookへ設定を追加する
-GKE上にjupyternotebookのサービス(?)は立ち上がるのですが、新しいnotebookを起動できません。
-このissue(https://github.com/kubeflow/pipelines/issues/179)を参考にしてFixすることができました。
+# Jupyter notebookへ設定を追加する
+GKE上にjupyter notebookのサービス(?)は立ち上がるのですが、新しいnotebookを起動できません。しかしこのissue(https://github.com/kubeflow/pipelines/issues/179)を参考にしてFixすることができました。
 
 まずはjupyter hubからイメージを選択し、Spawnします。
 今回は、
