@@ -101,18 +101,20 @@ GKE上にjupyter notebookのサービス(?)は立ち上がるのですが、新�
 まずはjupyter hubからイメージを選択し、Spawnします。
 今回は`gcr.io/kubeflow-images-public/tensorflow-1.10.1-notebook-cpu:v0.3.1`を選択しました。
 
-立ち上げたら
-https://github.com/kubeflow/pipelines/issues/179
-```
-# Check for the Jupyter pod name `jupyter-<USER>` (Here user is 'admin')
-kubectl get pods -n kubeflow
+立ち上がったら、Jupyter notebookのPodに入り、jupyterのコンフィグファイルに設定を追記します。
 
-kubectl exec -it -n kubeflow jupyter-taketoshi-2ekazusa-40brainpad-2eco-2ejp　bash
-jovyan@jupyter-admin:~$ vim .jupyter/jupyter_notebook_config.py
 ```
-c.NotebookApp.allow_origin='*'を追記
+# Jupyter pod nameを調べます `jupyter-<USER>` (Here user is 'admin')
+> kubectl get pods -n kubeflow
 
-再起動。
+> kubectl exec -it -n kubeflow jupyter-<USER> bash
+
+# 設定ファイルを変更します。
+> jovyan@jupyter-admin:~$ vim .jupyter/jupyter_notebook_config.py
+```
+スクショ
+
+上記のように`c.NotebookApp.allow_origin='*'`を追記します。そしてPodを再起動。
 ```
 jovyan@jupyter-admin:~$ ps -auxw
 USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
@@ -130,40 +132,28 @@ jupyter-admin                                            1/1       Running   2  
 export NAMESPACE=kubeflow
 kubectl port-forward -n ${NAMESPACE} $(kubectl get pods -n ${NAMESPACE} --selector=service=ambassador -o jsonpath='{.items[0].metadata.name}') 8080:80
 ```
+
 これでnotebookを立ち上げることができるようになりました。
 
-
-
-## Juptyter notebookでTFMAを可視化するための extensionのインストール
+# Juptyter notebookでTFMAを可視化するための extensionのインストール
 TFMAはインタラクティブにデータをスライスし、その結果をjupyter notebook上で可視化することができますが、そのためにExtensionをインストールする必要があります。
 
 ```
 # --system を付けた方が良いかも
 > jupyter nbextension enable --py widgetsnbextension
 > jupyter nbextension install --py --symlink tensorflow_model_analysis
-エラーが出る。。。
 > jupyter nbextension enable --py tensorflow_model_analysis
 ```
-ここで、permission denyが出てしまい、結局TFMAのレンダリングがされないままでした。解決しましたら追記します！
+本来であればExtensionが無事にインストール&Enabledされるはずなのですが、tensorflow_model_analysisのインストール時にエラーが出てしまい、結局TFMAのレンダリングがされないままでした。解決しましたら追記します！
+
+# Running the examples
+Kubeflow Pipelineに機械学習のPipelineを定義していきます。Kubeflow pipelinesのUIに入るとすでにいくつかサンプルのPipelineが定義されています。
+
+スクショ
 
 
-
-## Running the examples
-Kubeflow pipelineに機械学習のpipelineを定義していきます。
-Kubeflow pipelinesのUIに入るとすでにいくつかサンプルのPipelineが定義されています。
-
-**スクショ**
-
-
-それぞれ、
-- https://www.kubeflow.org/docs/guides/pipelines/build-pipeline/#compile-the-samples
-- https://github.com/kubeflow/pipelines/tree/master/samples/basic
-- https://github.com/kubeflow/pipelines/tree/master/samples/tfx
-- https://github.com/kubeflow/pipelines/tree/master/samples/xgboost-spark
-がコンパイルされたものがアップロードされているようです。
-特にML-TFXはExample pipeline that does classification with model analysis based on a public tax cab BigQuery dataset.とあるように、workflowと基本的には同じっぽいです。(ちなみに、試しにやってみたら途中でエラー吐くので諦めました)。
-ML - XGboost: Google DataProc clusterを作る (Hadoop, spark)ので、TFあんまり関係なさそう
-
+ワークフローは(ここ)[https://www.kubeflow.org/docs/guides/pipelines/build-pipeline/#compile-the-samples] にあるように、DSLで書かれた.pyファイルをコンパイルして、Kubeflow PipelinesのUIにアップロードすることでデプロイできます。
+現在、サンプルとして挙げられているものはそれぞれ、(ここのSamples)[https://github.com/kubeflow/pipelines/tree/master/samples/]にあげられているもののようです。特にML-TFXはExample pipeline that does classification with model analysis based on a public tax cab BigQuery dataset.とあるように、workflowと基本的には同じっぽいです。(ちなみに、試しにやってみたら途中でエラー吐くので諦めました)。
 
 
 ## workflow1をやってみる
