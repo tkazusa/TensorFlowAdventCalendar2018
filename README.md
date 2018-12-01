@@ -77,8 +77,7 @@ Kubeflow Pipelines UIにローカルのブラウザからGKE上のpod内のコ�
 
 ```
 > export NAMESPACE=kubeflow
-> kubectl port-forward -n ${NAMESPACE} $(kubectl get pods -n ${NAMESPACE} --selector=service=ambassador -o jsonpath='{.items[0].metadata.name}') 8080:80
-
+> kubectl port-forward -n ${NAMESPACE}  `kubectl get pods -n ${NAMESPACE} --selector=service=ambassador -o jsonpath='{.items[0].metadata.name}'` 8080:80
 ```
 
 この状態でCloud shellから"Web Preview"するとKubeflowのとても簡素なダッシュボードに飛びます。
@@ -98,10 +97,7 @@ Kubeflow Pipelines UIにローカルのブラウザからGKE上のpod内のコ�
 # Jupyter notebookへ設定を追加する
 GKE上にjupyter notebookのサービス(?)は立ち上がるのですが、新しいnotebookを起動できません。しかしこの[issue](https://github.com/kubeflow/pipelines/issues/179)を参考にしてFixすることができました。
 
-まずはjupyter hubからイメージを選択し、Spawnします。
-今回は`gcr.io/kubeflow-images-public/tensorflow-1.10.1-notebook-cpu:v0.3.1`を選択しました。
-
-立ち上がったら、Jupyter notebookのPodに入り、jupyterのコンフィグファイルに設定を追記します。
+まずはJupyterHubに入ります。サインインにUsernameとPasswordを求められますが、何を使っても入れます。私はGCPのアカウントを使いました。まずはjupyter hubからイメージを選択し、Spawnします。今回は`gcr.io/kubeflow-images-public/tensorflow-1.10.1-notebook-cpu:v0.3.1`を選択しました。立ち上がったら、Jupyter notebookのPodに入り、jupyterのコンフィグファイルに設定を追記します。
 
 ```
 # Jupyter pod nameを調べます `jupyter-<USER>` (Here user is 'admin')
@@ -115,6 +111,8 @@ GKE上にjupyter notebookのサービス(?)は立ち上がるのですが、新�
 スクショ
 
 上記のように`c.NotebookApp.allow_origin='*'`を追記します。そしてPodを再起動。
+
+
 ```
 jovyan@jupyter-admin:~$ ps -auxw
 USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
@@ -125,32 +123,28 @@ jovyan      41  0.0  0.0  36080  3300 ?        R+   12:53   0:00 ps -auxw
 
 jovyan@jupyter-admin:~$ kill 1
 jovyan@jupyter-admin:~$ command terminated with exit code 137
+```
 
-<USER>@CloudShell:~$ kubectl get pods  -n kubeflow |grep jupyter
-jupyter-admin                                            1/1       Running   2          16m
-
-export NAMESPACE=kubeflow
-kubectl port-forward -n ${NAMESPACE} $(kubectl get pods -n ${NAMESPACE} --selector=service=ambassador -o jsonpath='{.items[0].metadata.name}') 8080:80
+```
+> export NAMESPACE=kubeflow
+> kubectl port-forward -n ${NAMESPACE}  `kubectl get pods -n ${NAMESPACE} --selector=service=ambassador -o jsonpath='{.items[0].metadata.name}'` 8080:80
 ```
 
 これでnotebookを立ち上げることができるようになりました。
 
 # Juptyter notebookでTFMAを可視化するための extensionのインストール
-TFMAはインタラクティブにデータをスライスし、その結果をjupyter notebook上で可視化することができますが、そのためにExtensionをインストールする必要があります。
+TFMAはインタラクティブにデータをスライスし、その結果をjupyter notebook上で可視化することができます。しかし後述するTFMAのパートでうまくレンダリングできませんでした。 [こちら](https://www.tensorflow.org/tfx/model_analysis/)を参考にレンダリングに必要なExtensionを入れましたが下記のようなエラーが出ています。
 
 ```
-# --system を付けた方が良いかも
 > jupyter nbextension enable --py widgetsnbextension
 > jupyter nbextension install --py --symlink tensorflow_model_analysis
+OSError: [Errno 13] Permission denied: '/usr/local/share/jupyter/nbextensions'
 > jupyter nbextension enable --py tensorflow_model_analysis
 ```
-本来であればExtensionが無事にインストール&Enabledされるはずなのですが、tensorflow_model_analysisのインストール時にエラーが出てしまい、結局TFMAのレンダリングがされないままでした。解決しましたら追記します！
+きっとExamplesのイメージもすでにエクステンションを入れた状態で作られているとは思いますが、うまく入れられていないのでレンダリングできなかったのでしょうね。解決しましたら追記します！
 
 # Running the examples
 Kubeflow Pipelineに機械学習のPipelineを定義していきます。Kubeflow pipelinesのUIに入るとすでにいくつかサンプルのPipelineが定義されています。
-
-スクショ
-
 
 ワークフローは[ここ](https://www.kubeflow.org/docs/guides/pipelines/build-pipeline/#compile-the-samples)にあるように、DSLで書かれた.pyファイルをコンパイルして、Kubeflow PipelinesのUIにアップロードすることでデプロイできます。
 現在、サンプルとして挙げられているものはそれぞれ、[ここのSamples](https://github.com/kubeflow/pipelines/tree/master/samples)にあげられているもののようです。特にML-TFXはExample pipeline that does classification with model analysis based on a public tax cab BigQuery dataset.とあるように、workflowと基本的には同じっぽいです。(ちなみに、試しにやってみたら途中でエラー吐くので諦めました)。
