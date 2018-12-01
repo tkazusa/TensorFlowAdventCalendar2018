@@ -150,7 +150,7 @@ Kubeflow Pipelineに機械学習のPipelineを定義していきます。Kubeflo
 現在、サンプルとして挙げられているものはそれぞれ、[ここのSamples](https://github.com/kubeflow/pipelines/tree/master/samples)にあげられているもののようです。特にML-TFXはExample pipeline that does classification with model analysis based on a public tax cab BigQuery dataset.とあるように、workflowと基本的には同じっぽいです。(ちなみに、試しにやってみたら途中でエラー吐くので諦めました)。
 
 
-## workflow1をやってみる
+## workflowをやってみる
 ここではすでにUI上にあるPipelineではなくて、新しくPipelineをアップロードして実行するようです。まずはDSLで書かれたスクリプトをコンパイルします。手順は[こちら](https://github.com/amygdala/code-snippets/blob/master/ml/kubeflow-pipelines/samples/kubeflow-tf/README.md#example-workflow-1)です。
 
 ```
@@ -180,6 +180,10 @@ trainのblockからはTensorboardのダッシュボードに飛ぶこともで�
 
 
 TFMA実行
+
+## 機械学習モデルのサービング
+Workflow1の方はデプロイがうまくいきませんでしたが、workflowの方はGoogle ML Engineにデプロイされて、サービングできるようになってました。
+
 
 
 
