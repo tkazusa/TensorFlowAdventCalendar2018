@@ -3,7 +3,7 @@
 
 
 # 機械学習システムの実環境へのデプロイ&サービング
-- 機械学習が普及した2018年ですが、PoC(Proof of Concept)を超えて実運用まで漕ぎ着けている事例が増えてきたとはいえ、実システムに組み込んで運用する場合のハードルは依然高いように見えます。 その理由としては、2014年にGoogleから出された論文「[Machine Learning: The High Interest Credit Card of Technical Debt] (https://ai.google/research/pubs/pub43146)」でいくつか課題が挙げられており、それらの一つの解決策として機械学習プラットフォームである[TensorFlow Extended(TFX)](https://www.tensorflow.org/tfx/)が提案されています。
+機械学習が普及した2018年ですが、PoC(Proof of Concept)を超えて実運用まで漕ぎ着けている事例が増えてきたとはいえ、実システムに組み込んで運用する場合のハードルは依然高いように見えます。 その理由としては、2014年にGoogleから出された論文「[Machine Learning: The High Interest Credit Card of Technical Debt] (https://ai.google/research/pubs/pub43146)」でいくつか課題が挙げられており、それらの一つの解決策として機械学習プラットフォームである[TensorFlow Extended(TFX)](https://www.tensorflow.org/tfx/)が提案されています。
 
 現在、OSSとして公開されているTFXはそれぞのコンポーネントがバラバラであり、機械学習のワークフロー全体としては管理しづらいものでした。そこで機械学習のワークフロー全体をEndToEndで管理できるようにするためのコンポーネントがkubeflow pipelineです。以前から機械学習システム構築するためのツールキットである[Kubeflow](https://www.kubeflow.org/)にTFXはその一部が取り込まれていましたが、今年11月に発表(https://cloud-ja.googleblog.com/2018/11/introducing-ai-hub-and-kubeflow-pipelines-making-ai-simpler-faster-and-more-useful-for-businesses.html)されたKubeflow pipelinesでワークフローの管理が洗練されより使いやすくなったように感じます。
 
@@ -22,7 +22,7 @@ kubeflow pipelinesはKubeflowの新しいコンポーネントであり、機械
 1. GCP環境のセットアップ
 2. Kubernetes Engine (GKE) クラスタの準備
 3. Kubeflow Pipelinesのインストール
-4. 
+4. Examplesを試す
 
 # GCP環境のセットアップ
 まずはGCPの環境を整えます。大まかな手順としては下記です。
@@ -34,11 +34,12 @@ kubeflow pipelinesはKubeflowの新しいコンポーネントであり、機械
   - Backet名はXXXにしてあります。
 
 # Kubernetes Engine (GKE) クラスタの準備
-この通りにGKEクラスタを作成します。https://github.com/amygdala/code-snippets/blob/master/ml/kubeflow-pipelines/README.md#set-up-a-kubernetes-engine-gke-cluster
+この[README.md](https://github.com/amygdala/code-snippets/blob/master/ml/kubeflow-pipelines/README.md#set-up-a-kubernetes-engine-gke-cluster)にGKEクラスタを作成します。
 
 ```
 gcloud beta container --project <PROJECT_NAME> clusters create "kubeflow-pipelines" --zone "us-central1-a" --username "admin" --cluster-version "1.9.7-gke.11" --machine-type "custom-8-40960" --image-type "COS" --disk-type "pd-standard" --disk-size "100" --scopes "https://www.googleapis.com/auth/cloud-platform" --num-nodes "4" --enable-cloud-logging --enable-cloud-monitoring --no-enable-ip-alias --network "projects/mlops-215604/global/networks/default" --subnetwork "projects/<PROJECT_NAME>/regions/us-central1/subnetworks/default" --addons HorizontalPodAutoscaling,HttpLoadBalancing,KubernetesDashboard --enable-autoupgrade --enable-autorepair
 ```
+
 PROJECT_NAMEには使っているGCPのプロジェクト名を入れて下さい。
 
 作ったクラスタをコンテキストに割り当て、ClusterRoleリソースを作成します。
