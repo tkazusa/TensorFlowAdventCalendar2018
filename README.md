@@ -167,9 +167,9 @@ Kubeflow pipelines UIにこの`workflow1.py.tar.gz`をアップロードする�
 UIからExperimentsを設定し、Runさせます。
 このとき`preprocess-mode`と`tfma-mode`を`local`で実行していますが、ここを'cloud'にするとDataflowで動作します。
 
-スクショ
-
 この後ワークフローが走ります。UI眺めているだけではあまり実感無いですが、CSVにあったデータがTFTで処理され機械学習モデルに学習され、MLEngineにデプロイされてサービングされてます。
+
+スクショ
 
 ## TensorFlow Model Analysisでモデル解析
 ワークフローが走り終わるとJupyterNotebook上で学習されたモデルについての解析ができます。JupyterHubにサインインします。IDもパスワードはなんでも入れますが、GCPのアカウントを使うようにしました。解析にはこの[tfma_expers.ipynb](https://github.com/amygdala/code-snippets/blob/master/ml/kubeflow-pipelines/components/dataflow/tfma/tfma_expers.ipynb)を使います。`OUTPUT_PATH_PREFIX = 'gs://<YOUR_BUCKET_PATH>/<WORKFLOW_NAME>/'`の<YOUR_BUCKET_PATH>はクラスタ立てるときに指定したバケット名、<WORKFLOW_NAME>は下記コマンド、もしくはCloud ConsoleでGoogle Strageの当該バケットを見に行くとディレクトリができているのでそれを使います。
