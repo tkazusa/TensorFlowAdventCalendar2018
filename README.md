@@ -1,45 +1,17 @@
 # TensorFlowAdventCalendar2018
-
-この記事はTensorFlow Advent Calendar 2018年 3日目の記事です。
-
-今年のAdvent CalendarはKubeflow pipeliensについて加工と思います。
-
-https://cloud.google.com/blog/products/ai-machine-learning/getting-started-kubeflow-pipelines
+この記事はTensorFlow Advent Calendar 2018年 3日目の記事です。今年のAdvent Calendarは[Kubeflow pipeliens](https://github.com/kubeflow/pipelines/wiki)について書こうと思います。
 
 
-− 
 # 機械学習システムの実環境へのデプロイ&サービング
-- 機械学習が普及した2018年ですが、PoC(Proof of Concept)を超えて実運用まで漕ぎ着けている事例が増えてきたとはいえ、実システムに組み込んで運用する場合のハードルは依然高いように見えます。 
+- 機械学習が普及した2018年ですが、PoC(Proof of Concept)を超えて実運用まで漕ぎ着けている事例が増えてきたとはいえ、実システムに組み込んで運用する場合のハードルは依然高いように見えます。 その理由としては、2014年にGoogleから出された論文「[Machine Learning: The High Interest Credit Card of Technical Debt] (https://ai.google/research/pubs/pub43146)」でいくつか課題が挙げられており、それらの一つの解決策として機械学習プラットフォームである[TensorFlow Extended(TFX)](https://www.tensorflow.org/tfx/)が提案されています。
 
-- High...
-- TFX
-- しかしそれぞれのコンポーネントがバラバラだと機械学習のワークフロー全体としては管理しづらく、再利用性もないため依然技術的負債感が拭えません。
-- そこで機械学習のワークフロー全体をEndToEndで管理できるようにするためのコンポーネントがkubeflow pipelineです。
-- kubeflow pipeline自体はkubeflow上にワークフローをpythonをベースにしたDSLとして記述してDeployするためのSDKや、機械学習のexperimentsやjobを管理する機能があります。
-- ワークフローマネジメント自体はKubeflowのCoreComponentである、Argoが動いているらしいですが、UIが整い、やっと統一感があるpipeline管理ツールが出てきたなというところです。
+現在、OSSとして公開されているTFXはそれぞのコンポーネントがバラバラであり、機械学習のワークフロー全体としては管理しづらいものでした。そこで機械学習のワークフロー全体をEndToEndで管理できるようにするためのコンポーネントがkubeflow pipelineです。以前から機械学習システム構築するためのツールキットである[Kubeflow](https://www.kubeflow.org/)にTFXはその一部が取り込まれていましたが、今年11月に発表(https://cloud-ja.googleblog.com/2018/11/introducing-ai-hub-and-kubeflow-pipelines-making-ai-simpler-faster-and-more-useful-for-businesses.html)されたKubeflow pipelinesでワークフローの管理が洗練されより使いやすくなったように感じます。
 
-現状、Kubeflow pipelineが活用すると言われているTFXコンポーネントは下記です。 
-**TFT**
-- tf.transform はtraning-serving skewを解決する、それはtrainとtestで前処理の仕方が違う。チームが異なってたり、計算資源が異なると起こり得る。
-- TFTのアウトプットはTF graphとして出力される
-- TFT はApache Beamを使ってTFTするよ、Google Cloud DataflowはManagedのApache Beamだよ、ExamplesはlocalのBeamを使っているけど。dataflowを使うこともできるよ
+2017年末にkubeflowが出てきてから一年、kubeflow自体はまだ0.4と発展途上であり、公式のexamplesもまともに動かなかったりします。このkubeflow pipelinesも例に漏れずexampleを動かすのさえ苦行ではありますが、ユーザーが増えて知見が貯まることを願ってご紹介をしようと思います。
 
-**TFMA**
-- TFMA は様々な状況下や特徴、subsetにおけるモデルのパフォーマンスをビジュアライズしてくれる
-− TFT と同様にBeamが必要。
+# Kubeflow pipelines
 
-** Tensorflow Data Validation**
-- 統計量のサマリを出してくれる
-- それぞれのFeatureのデータの分布や統計量、TrainとTestの差を見せてくれる
-- データスキーマを勝手に作ってくれる、どんな値をとるか、範囲、ボキャブラリー(?)
-- 異常値を探してくれる。
-
-**Cloud ML Engine Online Prediction**
-- 今回のexampleじゃ使ってないよ
-- モデルの管理ができていいよ
-
-
-- 2017年末にkubeflowが出てきてから丸一年、kubeflow自体はまだ0.4と発展途上であり、公式のexamplesもまともに動かなかったりします。このkubeflow pipelinesも例に漏れずexampleを動かすのさえ苦行ではありますが、ユーザーが増えて知見が貯まることを願ってご紹介をしようと思います。
+kubeflow pipelinesはKubeflowの新しいコンポーネントであり、機械学習システムのワークフローを管理できるツールです。ワークフローの定義はPythonをベースにしたDSLで記述し、その中でTFXのコンポーネントを活用する事ができます。また、ワークフローごとに異なる設定をして実験(Experiment)を実施したログが残せたり、ワークフローがちゃんと動いているかモニタリングができるようになっていたりと、機会学習システムのモデリング以外に必要な機能が整備されています。ワークフローマネジメント自体はKubeflowのCoreComponentである、Argoが動いているらしいですが、UIが整ったことでやっと統一感があるpipeline管理ツールが出てきたなというところです。
 
 
 # Kubeflow Pipelines examples
@@ -274,4 +246,10 @@ https://github.com/kubeflow/kubeflow/issues/1130
 
 
 gs://bp-kubeflow-pipelines//workflow-1-wnrmr/
+
+
+
+
+# 参考リンク
+
 
