@@ -37,14 +37,14 @@ kubeflow pipelinesはKubeflowの新しいコンポーネントであり、機械
 この[README.md](https://github.com/amygdala/code-snippets/blob/master/ml/kubeflow-pipelines/README.md#set-up-a-kubernetes-engine-gke-cluster)にGKEクラスタを作成します。
 
 ```
-gcloud beta container --project <PROJECT_NAME> clusters create "kubeflow-pipelines" --zone "us-central1-a" --username "admin" --cluster-version "1.9.7-gke.11" --machine-type "custom-8-40960" --image-type "COS" --disk-type "pd-standard" --disk-size "100" --scopes "https://www.googleapis.com/auth/cloud-platform" --num-nodes "4" --enable-cloud-logging --enable-cloud-monitoring --no-enable-ip-alias --network "projects/mlops-215604/global/networks/default" --subnetwork "projects/<PROJECT_NAME>/regions/us-central1/subnetworks/default" --addons HorizontalPodAutoscaling,HttpLoadBalancing,KubernetesDashboard --enable-autoupgrade --enable-autorepair
+gcloud beta container --project <PROJECT_NAME> clusters create "kubeflow-pipelines" --zone "us-central1-a" --username "admin" --cluster-version "1.9.7-gke.11" --machine-type "custom-8-40960" --image-type "COS" --disk-type "pd-standard" --disk-size "100" --scopes "https://www.googleapis.com/auth/cloud-platform" --num-nodes "4" --enable-cloud-logging --enable-cloud-monitoring --no-enable-ip-alias --network "projects/<PROJECT_NAME>/global/networks/default" --subnetwork "projects/<PROJECT_NAME>/regions/us-central1/subnetworks/default" --addons HorizontalPodAutoscaling,HttpLoadBalancing,KubernetesDashboard --enable-autoupgrade --enable-autorepair
 ```
 
-PROJECT_NAMEには使っているGCPのプロジェクト名を入れて下さい。
+<PROJECT_NAME>には使っているGCPのプロジェクト名を入れて下さい。次に作ったクラスタをコンテキストに割り当て、ClusterRoleリソースを作成します。
+gcloud container clusters get-credentials kubeflow-pipelines --zone us-central1-a --project mlops-215604
 
-作ったクラスタをコンテキストに割り当て、ClusterRoleリソースを作成します。
 ```
-> gcloud container clusters get-credentials kubeflow-pipelines --zone us-central1-a --project mlops-215604
+> gcloud container clusters get-credentials kubeflow-pipelines --zone us-central1-a --project <PROJECT_NAME>
 Fetching cluster endpoint and auth data.
 kubeconfig entry generated for kubeflow-pipelines.
 > kubectl create clusterrolebinding ml-pipeline-admin-binding --clusterrole=cluster-admin --user=$(gcloud config get-value account)
